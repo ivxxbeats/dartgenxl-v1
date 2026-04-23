@@ -1,118 +1,249 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dart HLGEN - Generative Art Engine</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Dart HLGEN - Generative Art Engine V2</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             background: #0a0a0f;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(233, 69, 96, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            font-family: monospace;
-            margin: 0;
+            font-family: 'Courier New', 'Fira Code', monospace;
             padding: 20px;
         }
+        
         .container {
-            text-align: center;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(233, 69, 96, 0.2);
         }
+        
         canvas {
-            border: 2px solid #e94560;
-            box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+            display: block;
+            margin: 0 auto;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            height: auto;
+            max-width: 640px;
         }
-        .info {
+        
+        canvas:hover {
+            transform: scale(1.02);
+        }
+        
+        .info-panel {
             margin-top: 20px;
-            color: #00ffff;
-            font-size: 12px;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
             padding: 15px;
-            border-radius: 8px;
+            border-left: 3px solid #e94560;
         }
+        
+        .traits {
+            color: #e94560;
+            font-size: 11px;
+            line-height: 1.6;
+            word-break: break-word;
+            font-family: monospace;
+        }
+        
+        .traits span {
+            color: #00ffff;
+        }
+        
         .controls {
             margin-top: 15px;
             display: flex;
             gap: 10px;
             justify-content: center;
+            flex-wrap: wrap;
         }
+        
         input, button {
             background: #1a1a2e;
             color: #e94560;
             border: 1px solid #e94560;
             padding: 8px 16px;
             font-family: monospace;
+            border-radius: 6px;
         }
+        
+        input {
+            background: #0a0a0f;
+        }
+        
         button {
             cursor: pointer;
+            transition: all 0.2s;
         }
+        
         button:hover {
             background: #e94560;
             color: #1a1a2e;
+        }
+        
+        .status {
+            margin-top: 10px;
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 10px;
+            }
+            .traits {
+                font-size: 9px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <canvas id="artCanvas" width="640" height="640"></canvas>
-        <div class="info" id="info">Loading...</div>
+        <div class="info-panel">
+            <div class="traits" id="info">Loading engine...</div>
+        </div>
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="Token ID" value="1">
             <input type="text" id="hashInput" placeholder="Tx Hash" value="0xabc123">
             <button id="renderBtn">Render</button>
+            <button id="liveBtn">Live Mode</button>
+            <button id="freezeBtn">Freeze</button>
         </div>
+        <div class="status" id="status">Ready</div>
     </div>
     
-    <!-- Using engine.js - keep this name -->
     <script src="engine.js"></script>
-    
     <script>
-        console.log("Page loaded");
-        console.log("Looking for DartHLGEN in engine.js...");
+        console.log("Page loaded, waiting for engine...");
         
         const canvas = document.getElementById('artCanvas');
         const infoDiv = document.getElementById('info');
+        const statusDiv = document.getElementById('status');
         const tokenInput = document.getElementById('tokenInput');
         const hashInput = document.getElementById('hashInput');
         const renderBtn = document.getElementById('renderBtn');
+        const liveBtn = document.getElementById('liveBtn');
+        const freezeBtn = document.getElementById('freezeBtn');
         
-        function render() {
+        let currentSession = null;
+        
+        function stopCurrentSession() {
+            if (currentSession && currentSession.stop) {
+                currentSession.stop();
+                currentSession = null;
+            }
+        }
+        
+        function renderCanonicalMode() {
+            stopCurrentSession();
             const tokenId = tokenInput.value;
-            const txHash = hashInput.value;
+            const txHash = hashInput.value || '0xfallback';
             
-            if (!window.DartHLGEN) {
-                infoDiv.innerHTML = "❌ Engine not loaded. Check console for errors in engine.js";
-                console.error("DartHLGEN not found - engine.js may have errors");
-                return;
+            statusDiv.innerHTML = 'Rendering canonical...';
+            
+            try {
+                const result = DartHLGEN.renderCanonical(tokenId, txHash);
+                DartHLGEN.drawToCanvas(canvas, result);
+                
+                const t = result.traits;
+                infoDiv.innerHTML = 
+                    `<span>🎨 ${t.engineType}</span> · <span>${t.rarityClass}</span><br>` +
+                    `<span>📐 ${t.archetype}</span> · <span>${t.anchorForm}</span><br>` +
+                    `<span>⚡ ${t.primaryDriver}</span> · <span>${t.failureMode}</span><br>` +
+                    `${t.anomalyClass ? '<span>🌀 ' + t.anomalyClass + '</span>' : '<span>✨ No Anomaly</span>'} · ` +
+                    `<span>🎯 ES:${result.eventScore}</span><br>` +
+                    `<span>🔥 ${result.stabilityClass || '?'}</span> · ` +
+                    `<span>⚡ ${result.intensityBias || '?'}</span> · ` +
+                    `<span>🌀 ${result.activationType || '?'}</span>`;
+                
+                statusDiv.innerHTML = `Canonical mode - Token #${tokenId}`;
+            } catch(e) {
+                console.error("Render error:", e);
+                infoDiv.innerHTML = `❌ Error: ${e.message}`;
+                statusDiv.innerHTML = "Error rendering";
             }
-            
-            const result = window.DartHLGEN.renderCanonical(tokenId, txHash);
-            window.DartHLGEN.drawToCanvas(canvas, result);
-            
-            const t = result.traits;
-            infoDiv.innerHTML = 
-                `🎨 ${t.engineType || '?'} · ${t.rarityClass || '?'}<br>` +
-                `📐 ${t.archetype || '?'} · ${t.anchorForm || '?'}<br>` +
-                `⚡ ${t.primaryDriver || '?'} · ${t.failureMode || '?'}<br>` +
-                `${t.anomalyClass ? '🌀 ' + t.anomalyClass : '✨ No Anomaly'} · ES: ${result.eventScore || 0}`;
         }
         
-        // Wait for engine to load
-        let attempts = 0;
+        function startLiveMode() {
+            stopCurrentSession();
+            const tokenId = tokenInput.value;
+            const txHash = hashInput.value || '0xfallback';
+            
+            statusDiv.innerHTML = 'Starting live mode...';
+            
+            try {
+                const session = DartHLGEN.createLiveSession(tokenId, txHash);
+                session.startAnimation(canvas);
+                session.updateInfoPanel();
+                currentSession = session;
+                
+                statusDiv.innerHTML = `Live mode - Token #${tokenId} (animated)`;
+            } catch(e) {
+                console.error("Live mode error:", e);
+                infoDiv.innerHTML = `❌ Error: ${e.message}`;
+                statusDiv.innerHTML = "Error starting live mode";
+            }
+        }
+        
+        // Check if engine loaded
         function checkEngine() {
-            attempts++;
-            if (window.DartHLGEN) {
-                console.log("✅ Engine loaded successfully");
-                render();
-            } else if (attempts < 50) {
-                console.log(`⏳ Waiting for engine... (attempt ${attempts})`);
-                setTimeout(checkEngine, 100);
+            if (typeof DartHLGEN !== 'undefined') {
+                console.log("Engine loaded v" + DartHLGEN.version);
+                statusDiv.innerHTML = "Engine v" + DartHLGEN.version + " loaded";
+                
+                // Check URL params for mode
+                const params = new URLSearchParams(window.location.search);
+                const mode = params.get('mode');
+                const freeze = params.get('freeze');
+                
+                if (mode === 'live' && freeze !== 'true') {
+                    startLiveMode();
+                } else {
+                    renderCanonicalMode();
+                }
             } else {
-                console.error("❌ Engine failed to load after 5 seconds");
-                infoDiv.innerHTML = "❌ Failed to load engine.js - check file exists and has no syntax errors";
+                setTimeout(checkEngine, 100);
             }
         }
         
+        // Button handlers
+        renderBtn.onclick = renderCanonicalMode;
+        liveBtn.onclick = startLiveMode;
+        freezeBtn.onclick = () => {
+            renderCanonicalMode();
+        };
+        
+        // Start
         checkEngine();
-        renderBtn.onclick = render;
+        
+        // Debug helper
+        window.debugEngine = () => {
+            if (typeof DartHLGEN !== 'undefined' && DartHLGEN.DEBUG) {
+                console.log(DartHLGEN.DEBUG.status());
+            } else {
+                console.log("Engine not loaded or DEBUG not available");
+            }
+        };
     </script>
 </body>
 </html>
