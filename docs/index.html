@@ -125,11 +125,11 @@
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="Token ID" value="1">
             <input type="text" id="hashInput" placeholder="Tx Hash" value="0xabc123">
-            <button id="renderBtn">Render</button>
-            <button id="liveBtn">Live Mode</button>
-            <button id="freezeBtn">Freeze</button>
+            <button id="renderBtn">🔄 Render</button>
+            <button id="randomBtn">🎲 Random</button>
+            <button id="freezeBtn">❄️ Freeze</button>
         </div>
-        <div class="status" id="status">Ready</div>
+        <div class="status" id="status">Live mode always active</div>
     </div>
     
     <script src="engine.js"></script>
@@ -142,7 +142,7 @@
         const tokenInput = document.getElementById('tokenInput');
         const hashInput = document.getElementById('hashInput');
         const renderBtn = document.getElementById('renderBtn');
-        const liveBtn = document.getElementById('liveBtn');
+        const randomBtn = document.getElementById('randomBtn');
         const freezeBtn = document.getElementById('freezeBtn');
         
         let currentSession = null;
@@ -154,12 +154,13 @@
             }
         }
         
+        // Render canonical (freeze mode)
         function renderCanonicalMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value;
             const txHash = hashInput.value || '0xfallback';
             
-            statusDiv.innerHTML = 'Rendering canonical...';
+            statusDiv.innerHTML = '❄️ Freeze mode - static render';
             
             try {
                 const result = DartHLGEN.renderCanonical(tokenId, txHash);
@@ -175,8 +176,6 @@
                     `<span>🔥 ${result.stabilityClass || '?'}</span> · ` +
                     `<span>⚡ ${result.intensityBias || '?'}</span> · ` +
                     `<span>🌀 ${result.activationType || '?'}</span>`;
-                
-                statusDiv.innerHTML = `Canonical mode - Token #${tokenId}`;
             } catch(e) {
                 console.error("Render error:", e);
                 infoDiv.innerHTML = `❌ Error: ${e.message}`;
@@ -184,12 +183,13 @@
             }
         }
         
+        // Start live mode (ALWAYS ON by default)
         function startLiveMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value;
             const txHash = hashInput.value || '0xfallback';
             
-            statusDiv.innerHTML = 'Starting live mode...';
+            statusDiv.innerHTML = '🎬 Live mode - animated';
             
             try {
                 const session = DartHLGEN.createLiveSession(tokenId, txHash);
@@ -197,7 +197,21 @@
                 session.updateInfoPanel();
                 currentSession = session;
                 
-                statusDiv.innerHTML = `Live mode - Token #${tokenId} (animated)`;
+                // Override updateInfoPanel to use our info div
+                session.updateInfoPanel = () => {
+                    const t = session.getCanonical().traits;
+                    const canonical = session.getCanonical();
+                    infoDiv.innerHTML = 
+                        `<span>🎨 ${t.engineType}</span> · <span>${t.rarityClass}</span><br>` +
+                        `<span>📐 ${t.archetype}</span> · <span>${t.anchorForm}</span><br>` +
+                        `<span>⚡ ${t.primaryDriver}</span> · <span>${t.failureMode}</span><br>` +
+                        `${t.anomalyClass ? '<span>🌀 ' + t.anomalyClass + '</span>' : '<span>✨ No Anomaly</span>'} · ` +
+                        `<span>🎯 ES:${canonical.eventScore || 0}</span><br>` +
+                        `<span>🔥 ${canonical.stabilityClass || '?'}</span> · ` +
+                        `<span>⚡ ${canonical.intensityBias || '?'}</span> · ` +
+                        `<span>🌀 ${canonical.activationType || '?'}</span>`;
+                };
+                session.updateInfoPanel();
             } catch(e) {
                 console.error("Live mode error:", e);
                 infoDiv.innerHTML = `❌ Error: ${e.message}`;
@@ -205,21 +219,43 @@
             }
         }
         
+        // Random token generator
+        function randomToken() {
+            const randomId = Math.floor(Math.random() * 10000);
+            const randomHash = '0x' + Math.random().toString(36).substring(2, 10);
+            tokenInput.value = randomId;
+            hashInput.value = randomHash;
+            
+            // Update URL without reload
+            const url = new URL(window.location);
+            url.searchParams.set('tid', randomId);
+            url.searchParams.set('h', randomHash);
+            window.history.pushState({}, '', url);
+            
+            // Restart live mode with new token
+            startLiveMode();
+        }
+        
         // Check if engine loaded
         function checkEngine() {
             if (typeof DartHLGEN !== 'undefined') {
                 console.log("Engine loaded v" + DartHLGEN.version);
-                statusDiv.innerHTML = "Engine v" + DartHLGEN.version + " loaded";
+                statusDiv.innerHTML = "Engine v" + DartHLGEN.version + " - Live mode active";
                 
-                // Check URL params for mode
+                // Get URL params
                 const params = new URLSearchParams(window.location.search);
-                const mode = params.get('mode');
-                const freeze = params.get('freeze');
+                const tid = params.get('tid') || params.get('tokenId');
+                const h = params.get('h') || params.get('txHash');
+                const freeze = params.get('freeze') === 'true';
                 
-                if (mode === 'live' && freeze !== 'true') {
-                    startLiveMode();
-                } else {
+                if (tid) tokenInput.value = tid;
+                if (h) hashInput.value = h;
+                
+                // ALWAYS LIVE MODE - Freeze parameter overrides to canonical
+                if (freeze) {
                     renderCanonicalMode();
+                } else {
+                    startLiveMode();
                 }
             } else {
                 setTimeout(checkEngine, 100);
@@ -227,14 +263,41 @@
         }
         
         // Button handlers
-        renderBtn.onclick = renderCanonicalMode;
-        liveBtn.onclick = startLiveMode;
+        renderBtn.onclick = () => {
+            // Render button now restarts live mode with new values
+            startLiveMode();
+        };
+        
+        randomBtn.onclick = randomToken;
+        
         freezeBtn.onclick = () => {
-            renderCanonicalMode();
+            // Toggle freeze mode
+            const url = new URL(window.location);
+            if (url.searchParams.get('freeze') === 'true') {
+                url.searchParams.delete('freeze');
+                startLiveMode();
+            } else {
+                url.searchParams.set('freeze', 'true');
+                renderCanonicalMode();
+            }
+            window.history.pushState({}, '', url);
         };
         
         // Start
         checkEngine();
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                randomToken();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                startLiveMode();
+            }
+            if (e.key === 'f' || e.key === 'F') {
+                freezeBtn.click();
+            }
+        });
         
         // Debug helper
         window.debugEngine = () => {
@@ -244,6 +307,8 @@
                 console.log("Engine not loaded or DEBUG not available");
             }
         };
+        
+        console.log("Live mode always on - use ?freeze=true for static render");
     </script>
 </body>
 </html>
