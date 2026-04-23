@@ -918,14 +918,14 @@
         }
         
         function fetchIntensity() {
-            fetch('intensity.json?t=' + Date.now())
+            fetch('https://raw.githubusercontent.com/ivxxbeats/farcaster-intensity/main/intensity.json?t=' + Date.now())
                 .then(r => r.json())
                 .then(data => {
                     if (data && typeof data.intensity === 'number') {
                         currentLiveIntensity = Math.max(0.05, Math.min(0.95, data.intensity));
                     }
                 })
-                .catch(() => {});
+                .catch(() => console.warn("Intensity fetch failed"));
         }
         
         function startAnimation(canvas) {
