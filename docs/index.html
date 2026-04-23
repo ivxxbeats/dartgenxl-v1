@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dart HLGEN - Generative Art Engine</title>
+    <style>
+        body {
+            background: #0a0a0f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #e94560;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+        }
+        .info {
+            margin-top: 20px;
+            color: #00ffff;
+            font-size: 12px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        input, button {
+            background: #1a1a2e;
+            color: #e94560;
+            border: 1px solid #e94560;
+            padding: 8px 16px;
+            font-family: monospace;
+        }
+        button {
+            cursor: pointer;
+        }
+        button:hover {
+            background: #e94560;
+            color: #1a1a2e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="artCanvas" width="640" height="640"></canvas>
+        <div class="info" id="info">Loading...</div>
+        <div class="controls">
+            <input type="text" id="tokenInput" placeholder="Token ID" value="1">
+            <input type="text" id="hashInput" placeholder="Tx Hash" value="0xabc123">
+            <button id="renderBtn">Render</button>
+        </div>
+    </div>
+    
+    <!-- Using engine.js - keep this name -->
+    <script src="engine.js"></script>
+    
+    <script>
+        console.log("Page loaded");
+        console.log("Looking for DartHLGEN in engine.js...");
+        
+        const canvas = document.getElementById('artCanvas');
+        const infoDiv = document.getElementById('info');
+        const tokenInput = document.getElementById('tokenInput');
+        const hashInput = document.getElementById('hashInput');
+        const renderBtn = document.getElementById('renderBtn');
+        
+        function render() {
+            const tokenId = tokenInput.value;
+            const txHash = hashInput.value;
+            
+            if (!window.DartHLGEN) {
+                infoDiv.innerHTML = "❌ Engine not loaded. Check console for errors in engine.js";
+                console.error("DartHLGEN not found - engine.js may have errors");
+                return;
+            }
+            
+            const result = window.DartHLGEN.renderCanonical(tokenId, txHash);
+            window.DartHLGEN.drawToCanvas(canvas, result);
+            
+            const t = result.traits;
+            infoDiv.innerHTML = 
+                `🎨 ${t.engineType || '?'} · ${t.rarityClass || '?'}<br>` +
+                `📐 ${t.archetype || '?'} · ${t.anchorForm || '?'}<br>` +
+                `⚡ ${t.primaryDriver || '?'} · ${t.failureMode || '?'}<br>` +
+                `${t.anomalyClass ? '🌀 ' + t.anomalyClass : '✨ No Anomaly'} · ES: ${result.eventScore || 0}`;
+        }
+        
+        // Wait for engine to load
+        let attempts = 0;
+        function checkEngine() {
+            attempts++;
+            if (window.DartHLGEN) {
+                console.log("✅ Engine loaded successfully");
+                render();
+            } else if (attempts < 50) {
+                console.log(`⏳ Waiting for engine... (attempt ${attempts})`);
+                setTimeout(checkEngine, 100);
+            } else {
+                console.error("❌ Engine failed to load after 5 seconds");
+                infoDiv.innerHTML = "❌ Failed to load engine.js - check file exists and has no syntax errors";
+            }
+        }
+        
+        checkEngine();
+        renderBtn.onclick = render;
+    </script>
+</body>
+</html>
