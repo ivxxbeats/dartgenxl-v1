@@ -655,7 +655,14 @@ if (isRupture) {
         
         finalT = Math.max(0.03, Math.min(0.97, finalT));
         
-        // Color pipeline
+                        // Add token-based color variation
+                if (traits.engineType === "Canonical" && traits.colorMood === "Nebula") {
+                    const tokenVariation = (parseInt(tokenId, 10) || 1) % 100 / 100;
+                    r = (r + tokenVariation * 0.2) % 1;
+                    g = (g + tokenVariation * 0.15) % 1;
+                    b = (b + tokenVariation * 0.25) % 1;
+                }
+// Color pipeline
         let { r, g, b } = getRichColor(finalT, colorMood, time, primaryDriver);
         let colorDisciplined = engineColorDiscipline(r, g, b, engineType, finalT, time);
         
@@ -701,7 +708,14 @@ if (isRupture) {
         const canonicalIntensity = getCanonicalIntensity(seed);
         const canonicalTime = getCanonicalTime(tokenId, seed, canonicalIntensity);
         
-        const freqRNG = makeSeededRand(splitSeed(seed, 300));
+        
+                // Increase deterministic variety between tokens
+                const tokenNum = parseInt(tokenId, 10) || 1;
+                // Add more variation based on token number
+                const extraOffset = (tokenNum * 997) % 1000;
+                for (let i = 0; i < extraOffset; i++) {
+                    freqRNG();
+                }
         const freqIndex = Math.floor(freqRNG() * 4);
         
         const pixels = new Uint8ClampedArray(width * height * 4);
@@ -951,7 +965,17 @@ if (isRupture) {
                 .catch(() => console.warn("Intensity fetch failed"));
         }
         
-        function startAnimation(canvas) {
+        
+                // Fade from canonical to live
+                let opacity = 1;
+                const fadeInterval = setInterval(() => {
+                    opacity -= 0.05;
+                    canvas.style.opacity = opacity;
+                    if (opacity <= 0) {
+                        clearInterval(fadeInterval);
+                        canvas.style.opacity = 1;
+                    }
+                }, 30);
             canvasElement = canvas;
             let startTime = null;
             
@@ -1103,6 +1127,10 @@ if (isRupture) {
     console.log("  ✅ Primary Driver: performance style");
     
 })();
+
+
+
+
 
 
 
