@@ -1,8 +1,8 @@
 // ============================================================
-// DART GENXL ENGINE v1.8.1
+// DART GENXL ENGINE v1.8.2
 // Terminal Viewer Optimized | No UI Over Canvas
 // Canonical first | Pressure ramps with fade
-// FIXED: Session-scoped echo memory, intensity clamping, micro-variants
+// FIXED: Intensity fetch from nested JSON, frame 0 lock, session-scoped memory
 // ============================================================
 
 (function() {
@@ -38,7 +38,7 @@
     const COLOR_MOODS = ["Ethereal", "Volcanic", "StellarDrift", "Nebula", "SolarFlare", "DeepVoid", "PrismCore", "AuroraBorealis"];
     
     // Extended spatial behaviors
-    const SPATIAL_BEHAVIORS_EXTENDED = [
+    const SPATIAL_BEHAVIORS = [
         "Radial", "Spiral", "FlowField", "Kaleido", "Vortex", "Asymmetrical",
         "Orbit", "Tunnel", "FaultGrid", "MirrorSplit", "PressureWell"
     ];
@@ -974,7 +974,7 @@
     }
     
     // ============================================================
-    // LIVE SESSION - with session-scoped echo memory
+    // LIVE SESSION - with session-scoped echo memory & fixed intensity fetch
     // ============================================================
     
     function createLiveSession(tokenId, txHash) {
@@ -989,6 +989,59 @@
         let echoMemoryBufferSmooth = 0;
         let isFirstFrame = true;
         let intervalId = null;
+        
+        // IMPROVED INTENSITY FETCH - handles nested JSON and multiple paths
+        function fetchIntensity() {
+            const url = 'https://raw.githubusercontent.com/ivxxbeats/farcaster-intensity/main/intensity.json?t=' + Date.now();
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    
+                    let intensityValue = null;
+                    
+                    // Path 1: top-level intensity (number)
+                    if (typeof data.intensity === 'number') {
+                        intensityValue = data.intensity;
+                    }
+                    // Path 2: awakenedEngine.progression as string mapping
+                    else if (data.awakenedEngine && data.awakenedEngine.progression) {
+                        const prog = data.awakenedEngine.progression;
+                        if (prog === "dormant") intensityValue = 0.15;
+                        else if (prog === "stirring") intensityValue = 0.25;
+                        else if (prog === "awakening") intensityValue = 0.45;
+                        else if (prog === "awakened") intensityValue = 0.70;
+                        else if (prog === "ascended") intensityValue = 0.90;
+                        else if (prog === "base") intensityValue = 0.35;
+                        else intensityValue = 0.35;
+                    }
+                    // Path 3: metrics fallback
+                    else if (data.metrics && typeof data.metrics.casts === 'number') {
+                        intensityValue = Math.min(0.95, 0.2 + (data.metrics.casts / 50));
+                    }
+                    
+                    if (intensityValue !== null) {
+                        let newTarget = Math.max(0.05, Math.min(0.95, intensityValue));
+                        
+                        // Prevent extreme jumps (>30% change in one fetch)
+                        if (Math.abs(newTarget - targetLiveIntensity) > 0.3) {
+                            newTarget = targetLiveIntensity + Math.sign(newTarget - targetLiveIntensity) * 0.3;
+                        }
+                        
+                        targetLiveIntensity = newTarget;
+                        console.log(`[DART] Intensity updated: ${targetLiveIntensity.toFixed(3)}`);
+                    } else {
+                        console.warn("[DART] Could not parse intensity from JSON", data);
+                    }
+                })
+                .catch(err => {
+                    console.warn("[DART] Intensity fetch failed:", err.message);
+                });
+        }
         
         function renderFrame() {
             if (!canvasElement) return;
@@ -1075,7 +1128,7 @@
                 }
             }
             
-            // Update echo memory for next frame (from average of frame)
+            // Update echo memory for next frame
             let avgR = 0, avgG = 0, avgB = 0;
             for (let i = 0; i < pixels.length; i += 4) {
                 avgR += pixels[i];
@@ -1094,24 +1147,6 @@
             animationId = requestAnimationFrame(renderFrame);
         }
         
-        function fetchIntensity() {
-            fetch('https://raw.githubusercontent.com/ivxxbeats/farcaster-intensity/main/intensity.json?t=' + Date.now())
-                .then(r => r.json())
-                .then(data => { 
-                    if (data && typeof data.intensity === 'number') {
-                        let newTarget = Math.max(0.05, Math.min(0.95, data.intensity));
-                        
-                        // Prevent extreme jumps (>30% change)
-                        if (Math.abs(newTarget - targetLiveIntensity) > 0.3) {
-                            newTarget = targetLiveIntensity + Math.sign(newTarget - targetLiveIntensity) * 0.3;
-                        }
-                        
-                        targetLiveIntensity = newTarget;
-                    }
-                })
-                .catch(() => {});
-        }
-        
         function startAnimation(canvas) {
             canvasElement = canvas;
             startTime = null;
@@ -1119,6 +1154,7 @@
             isFirstFrame = true;
             echoMemoryBufferSmooth = 0;
             
+            // Fetch immediately on start
             fetchIntensity();
             intervalId = setInterval(fetchIntensity, 15000);
             
@@ -1161,7 +1197,7 @@
     // ============================================================
     
     window.DartHLGEN = { 
-        version: "1.8.1", 
+        version: "1.8.2", 
         renderCanonical, 
         createLiveSession, 
         drawToCanvas, 
@@ -1169,5 +1205,5 @@
         CONFIG 
     };
     
-    console.log("Dart GenXL Engine v1.8.1 - Fully patched, ready");
+    console.log("Dart GenXL Engine v1.8.2 - Fully patched with intensity fetch fix");
 })();
