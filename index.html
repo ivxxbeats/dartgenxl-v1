@@ -56,6 +56,12 @@
             border-radius: 20px;
         }
         
+        /* CANVAS - NO UI OVERLAY, CLEAN */
+        .canvas-wrapper {
+            position: relative;
+            display: block;
+        }
+        
         canvas {
             display: block;
             margin: 0 auto;
@@ -67,6 +73,7 @@
             background: #000000;
         }
         
+        /* INTENSITY SECTION - BELOW CANVAS, NOT OVERLAY */
         .intensity-section {
             margin-top: 20px;
             background: #0d0d12;
@@ -95,7 +102,7 @@
             background: linear-gradient(90deg, #5a5aff, #aa88ff);
             width: 0%;
             height: 100%;
-            transition: width 0.1s linear;
+            transition: width 0.05s linear;
             border-radius: 20px;
         }
         
@@ -113,6 +120,11 @@
         .mode-badge.live {
             background: linear-gradient(135deg, #5a5aff20, #aa88ff20);
             color: #aa88ff;
+        }
+        
+        .mode-badge.static {
+            background: #0d0d12;
+            color: #666688;
         }
         
         .traits-panel {
@@ -238,6 +250,11 @@
             50% { opacity: 0; }
         }
         
+        /* CANONICAL INTENSITY HIGHLIGHT */
+        .canonical-value {
+            color: #5a5aff !important;
+        }
+        
         @media (max-width: 640px) {
             .container { padding: 16px; }
             .traits-grid { grid-template-columns: 1fr; }
@@ -251,8 +268,12 @@
             <div class="badge">THE ART OF FARCASTER</div>
         </div>
         
-        <canvas id="artCanvas" width="640" height="640"></canvas>
+        <!-- CANVAS - PURE ART, NO OVERLAYS -->
+        <div class="canvas-wrapper">
+            <canvas id="artCanvas" width="640" height="640"></canvas>
+        </div>
         
+        <!-- INTENSITY SECTION - BELOW CANVAS -->
         <div class="intensity-section">
             <div class="intensity-label">
                 <span id="intensityLabel">LIVE INTENSITY</span>
@@ -267,6 +288,7 @@
             </div>
         </div>
         
+        <!-- TRAITS PANEL -->
         <div class="traits-panel">
             <div class="traits-title">TOKEN TRAITS</div>
             <div class="traits-grid" id="traitsGrid">
@@ -281,10 +303,11 @@
                 <div class="trait-item"><span>ANOMALY:</span> <span id="traitAnomaly">—</span></div>
                 <div class="trait-item"><span>MICRO:</span> <span id="traitMicro">—</span></div>
                 <div class="trait-item"><span>EVENT SCORE:</span> <span id="traitES">—</span></div>
-                <div class="trait-item"><span>CANONICAL INT:</span> <span id="traitCanonicalInt">—</span></div>
+                <div class="trait-item"><span>⚡ CANONICAL INT:</span> <span id="traitCanonicalInt" class="canonical-value">—</span></div>
             </div>
         </div>
         
+        <!-- AFFECTS PANEL -->
         <div class="affects-panel">
             <div class="affects-title">INTENSITY PHASES</div>
             <div class="affects-text">
@@ -295,6 +318,7 @@
             </div>
         </div>
         
+        <!-- CONTROLS -->
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="TOKEN ID" value="1">
             <input type="text" id="hashInput" placeholder="TX HASH" value="0xabc123">
@@ -311,7 +335,7 @@
     <script src="engine.js"></script>
     <script>
         // ============================================================
-        // TERMINAL VIEWER - FIXED: Live intensity vs Canonical intensity
+        // TERMINAL VIEWER - SHOWS RAW FETCHED INTENSITY
         // ============================================================
         
         const canvas = document.getElementById('artCanvas');
@@ -353,40 +377,37 @@
             intensityBar.style.width = `${percent}%`;
             intensityPercent.textContent = `${percent}%`;
             
-            let phase = "";
             let phaseText = "";
-            
             if (intensity > 0.82) {
-                phase = "ASCENDED";
                 phaseText = "ASCENDED";
             } else if (intensity > 0.60) {
-                phase = "AWAKENED";
                 phaseText = "AWAKENED";
             } else if (intensity > 0.35) {
-                phase = "AWAKENING";
                 phaseText = "AWAKENING";
             } else {
-                phase = "STIRRING";
                 phaseText = "STIRRING";
             }
-            
             pressureStageSpan.textContent = phaseText;
             
-            if (isLive) {
+            if (isLive && currentSession) {
                 modeBadge.textContent = phaseText;
                 modeBadge.classList.add('live');
+                modeBadge.classList.remove('static');
             }
         }
         
         function updateModeUI(isLiveMode) {
             if (isLiveMode) {
-                intensityLabel.textContent = 'LIVE INTENSITY';
+                intensityLabel.textContent = 'LIVE INTENSITY (FETCHED)';
                 modeBadge.textContent = 'LIVE';
                 modeBadge.classList.add('live');
+                modeBadge.classList.remove('static');
             } else {
                 intensityLabel.textContent = 'CANONICAL (STATIC)';
                 modeBadge.textContent = 'STATIC';
                 modeBadge.classList.remove('live');
+                modeBadge.classList.add('static');
+                updateIntensityUI(0, false);
             }
         }
         
@@ -436,7 +457,7 @@
             
             statusDiv.innerHTML = `FREEZE MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
             showLoading(`LOADING TOKEN ${tokenId}...`);
-            updateModeUI(false);  // STATIC mode
+            updateModeUI(false);
             
             try {
                 const result = DartHLGEN.renderCanonical(tokenId, txHash);
@@ -446,9 +467,6 @@
                 DartHLGEN.drawToCanvas(canvas, result);
                 updateTraitsUI(result);
                 
-                // In freeze mode, show 0% intensity (canonical has no pressure)
-                updateIntensityUI(0, false);
-                
                 statusDiv.innerHTML = `FREEZE MODE — ${result.traits.engineType} · ${result.traits.rarityClass} <span class="cursor"></span>`;
             } catch(e) {
                 console.error("Render error:", e);
@@ -457,7 +475,7 @@
             }
         }
         
-        // LIVE MODE - Shows fetched intensity from API
+        // LIVE MODE - Shows raw fetched intensity from API
         function startLiveMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value.trim() || '1';
@@ -465,7 +483,7 @@
             
             statusDiv.innerHTML = `LIVE MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
             showLoading(`BOOTING LIVE ENGINE...`);
-            updateModeUI(true);  // LIVE mode
+            updateModeUI(true);
             
             try {
                 // First render canonical as base
@@ -479,15 +497,22 @@
                 currentSession = session;
                 session.startAnimation(canvas);
                 
-                // Update intensity UI from live session (fetched API value)
+                // Show RAW FETCHED intensity, not the blended canonical value
                 intensityUpdateInterval = setInterval(() => {
-                    if (currentSession && currentSession.getLiveIntensity) {
-                        const intensity = currentSession.getLiveIntensity();
-                        if (intensity !== undefined) {
-                            updateIntensityUI(intensity, true);
+                    if (currentSession) {
+                        // Use the raw target intensity (fetched from API)
+                        let rawIntensity = null;
+                        if (currentSession.getRawTargetIntensity) {
+                            rawIntensity = currentSession.getRawTargetIntensity();
+                        } else if (currentSession.getLiveIntensity) {
+                            rawIntensity = currentSession.getLiveIntensity();
+                        }
+                        
+                        if (rawIntensity !== undefined && rawIntensity !== null) {
+                            updateIntensityUI(rawIntensity, true);
                         }
                     }
-                }, 50);  // Faster updates for smoother bar animation
+                }, 50);
                 
                 statusDiv.innerHTML = `LIVE MODE — PRESSURE SENSITIVE · FETCHING INTENSITY <span class="cursor"></span>`;
             } catch(e) {
@@ -579,7 +604,7 @@
             if (e.key === 'f' || e.key === 'F') toggleFreeze();
         });
         
-        console.log("Terminal Viewer Ready — Live intensity / Canonical intensity separated");
+        console.log("Terminal Viewer Ready — Showing raw fetched intensity");
     </script>
 </body>
 </html>
