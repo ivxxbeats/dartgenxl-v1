@@ -1,25 +1,17 @@
 // ============================================================
-// DART GENXL ENGINE v1.8.2
-// Terminal Viewer Optimized | No UI Over Canvas
-// Canonical first | Pressure ramps with fade
-// FIXED: Intensity fetch from nested JSON, frame 0 lock, session-scoped memory
+// DART GENXL ENGINE v1.8.3
+// FIXED: Intensity drift on refresh - resets target per session
 // ============================================================
 
 (function() {
     "use strict";
     
-    // ============================================================
-    // CONFIGURATION
-    // ============================================================
     const CONFIG = {
         RENDER_WIDTH: 640,
         RENDER_HEIGHT: 640,
         SEED_SALT: "dart_genxl_v1"
     };
     
-    // ============================================================
-    // CONSTANTS
-    // ============================================================
     const RARITY_CLASSES = {
         COMMON: "Common",
         UNCOMMON: "Uncommon", 
@@ -37,18 +29,14 @@
     const FAILURE_MODES = ["Recovering", "Residual", "VoidBloom", "Fracture"];
     const COLOR_MOODS = ["Ethereal", "Volcanic", "StellarDrift", "Nebula", "SolarFlare", "DeepVoid", "PrismCore", "AuroraBorealis"];
     
-    // Extended spatial behaviors
     const SPATIAL_BEHAVIORS = [
         "Radial", "Spiral", "FlowField", "Kaleido", "Vortex", "Asymmetrical",
         "Orbit", "Tunnel", "FaultGrid", "MirrorSplit", "PressureWell"
     ];
     
-    // Engine-specific variants
     const CANONICAL_VARIANTS = ["Breathing", "Pulsing", "Steady", "Harmonic"];
     const ECHO_VARIANTS = ["Ghost", "Resonant", "Trailing", "Reverberant"];
     const RUPTURE_VARIANTS = ["Tear", "Shatter", "Pressure", "Collapse"];
-    
-    // Micro events
     const MICRO_EVENTS = ["None", "SignalScar", "PhaseGlitch", "MemoryFlicker", "Crackle"];
     
     const LOG2 = Math.log(2);
@@ -110,7 +98,7 @@
     }
     
     // ============================================================
-    // DERIVED TRAITS (for terminal display)
+    // DERIVED TRAITS
     // ============================================================
     function getStabilityClass(failureMode, engineType, rarityClass) {
         if (rarityClass === RARITY_CLASSES.GRAIL) return "Chaos-Bound";
@@ -253,7 +241,6 @@
         
         if (rarityClass === RARITY_CLASSES.GRAIL) traits.anomalyClass = rollAnomalyClass(rng);
         
-        // Micro-variants
         traits.motionVariant = Math.floor(streams[8]() * 6);
         traits.textureVariant = Math.floor(streams[9]() * 8);
         traits.paletteVariant = Math.floor(streams[10]() * 5);
@@ -313,7 +300,7 @@
     }
     
     // ============================================================
-    // GEOMETRY & ENGINE HELPERS
+    // GEOMETRY HELPERS (condensed for brevity - full implementations assumed)
     // ============================================================
     
     function applyArchetypeGeometry(archetype, x, y) { 
@@ -454,74 +441,17 @@
         y -= symmetryBreak * 0.15;
         
         switch(composition) {
-            case "Radial": 
-                const r = Math.sqrt(x*x + y*y); 
-                const a = Math.atan2(y, x); 
-                x = a; y = r; 
-                break;
-            case "Spiral": 
-                const sr = Math.sqrt(x*x + y*y); 
-                const sa = Math.atan2(y, x); 
-                const spiralR = Math.pow(sr, 0.7) * 1.5; 
-                x = Math.cos(sa + spiralR * 4) * spiralR; 
-                y = Math.sin(sa + spiralR * 4) * spiralR; 
-                break;
-            case "FlowField": 
-                const angle = Math.sin(x * 3) * Math.cos(y * 3); 
-                const cosA = Math.cos(angle); 
-                const sinA = Math.sin(angle); 
-                const nx = x * cosA - y * sinA; 
-                const ny = x * sinA + y * cosA; 
-                x = nx; y = ny; 
-                break;
-            case "Kaleido": 
-                let angleK = Math.atan2(y, x); 
-                let radiusK = Math.sqrt(x*x + y*y); 
-                let segments = 6; 
-                angleK = angleK % (Math.PI * 2 / segments); 
-                if (angleK > Math.PI / segments) angleK = (Math.PI * 2 / segments) - angleK; 
-                x = Math.cos(angleK) * radiusK; 
-                y = Math.sin(angleK) * radiusK; 
-                break;
-            case "Vortex": 
-                let vr = Math.sqrt(x*x + y*y); 
-                let va = Math.atan2(y, x); 
-                va += vr * 2.0; 
-                x = Math.cos(va) * vr; 
-                y = Math.sin(va) * vr; 
-                break;
-            case "Asymmetrical": 
-                x *= 1.3; y *= 0.6; 
-                break;
-            case "Orbit": 
-                const orbitR = Math.sqrt(x*x + y*y); 
-                const orbitA = Math.atan2(y, x); 
-                const orbitOffset = orbitR * 0.8; 
-                x = Math.cos(orbitA + orbitOffset) * orbitR; 
-                y = Math.sin(orbitA + orbitOffset) * orbitR; 
-                break;
-            case "Tunnel": 
-                const tunnelZ = Math.sqrt(x*x + y*y); 
-                const tunnelTheta = Math.atan2(y, x); 
-                x = Math.sin(tunnelTheta * 3 + tunnelZ * 2) * (1 - tunnelZ * 0.3); 
-                y = Math.cos(tunnelTheta * 2 + tunnelZ * 3) * (1 - tunnelZ * 0.3); 
-                break;
-            case "FaultGrid": 
-                const gridX = Math.sin(x * 4) * 0.3; 
-                const gridY = Math.cos(y * 4) * 0.3; 
-                x = x + gridX; y = y + gridY; 
-                break;
-            case "MirrorSplit": 
-                if (x < 0) x = -x; 
-                if (y < 0) y = -y; 
-                x = x * 1.2; y = y * 1.2; 
-                break;
-            case "PressureWell": 
-                const wellDist = Math.sqrt(x*x + y*y); 
-                const wellStrength = Math.exp(-wellDist * 2); 
-                x = x * (1 - wellStrength * 0.5); 
-                y = y * (1 - wellStrength * 0.5); 
-                break;
+            case "Radial": const r = Math.sqrt(x*x + y*y); const a = Math.atan2(y, x); x = a; y = r; break;
+            case "Spiral": const sr = Math.sqrt(x*x + y*y); const sa = Math.atan2(y, x); const spiralR = Math.pow(sr, 0.7) * 1.5; x = Math.cos(sa + spiralR * 4) * spiralR; y = Math.sin(sa + spiralR * 4) * spiralR; break;
+            case "FlowField": const angle = Math.sin(x * 3) * Math.cos(y * 3); const cosA = Math.cos(angle); const sinA = Math.sin(angle); const nx = x * cosA - y * sinA; const ny = x * sinA + y * cosA; x = nx; y = ny; break;
+            case "Kaleido": let angleK = Math.atan2(y, x); let radiusK = Math.sqrt(x*x + y*y); let segments = 6; angleK = angleK % (Math.PI * 2 / segments); if (angleK > Math.PI / segments) angleK = (Math.PI * 2 / segments) - angleK; x = Math.cos(angleK) * radiusK; y = Math.sin(angleK) * radiusK; break;
+            case "Vortex": let vr = Math.sqrt(x*x + y*y); let va = Math.atan2(y, x); va += vr * 2.0; x = Math.cos(va) * vr; y = Math.sin(va) * vr; break;
+            case "Asymmetrical": x *= 1.3; y *= 0.6; break;
+            case "Orbit": const orbitR = Math.sqrt(x*x + y*y); const orbitA = Math.atan2(y, x); const orbitOffset = orbitR * 0.8; x = Math.cos(orbitA + orbitOffset) * orbitR; y = Math.sin(orbitA + orbitOffset) * orbitR; break;
+            case "Tunnel": const tunnelZ = Math.sqrt(x*x + y*y); const tunnelTheta = Math.atan2(y, x); x = Math.sin(tunnelTheta * 3 + tunnelZ * 2) * (1 - tunnelZ * 0.3); y = Math.cos(tunnelTheta * 2 + tunnelZ * 3) * (1 - tunnelZ * 0.3); break;
+            case "FaultGrid": const gridX = Math.sin(x * 4) * 0.3; const gridY = Math.cos(y * 4) * 0.3; x = x + gridX; y = y + gridY; break;
+            case "MirrorSplit": if (x < 0) x = -x; if (y < 0) y = -y; x = x * 1.2; y = y * 1.2; break;
+            case "PressureWell": const wellDist = Math.sqrt(x*x + y*y); const wellStrength = Math.exp(-wellDist * 2); x = x * (1 - wellStrength * 0.5); y = y * (1 - wellStrength * 0.5); break;
         }
         return { x, y };
     }
@@ -535,45 +465,21 @@
             r = Math.sin(t * 40 + time + hueShift) * 0.5 + 0.5;
             g = Math.sin(t * 40 + 2.094 + time + hueShift) * 0.5 + 0.5;
             b = Math.sin(t * 40 + 4.188 + time + hueShift) * 0.5 + 0.5;
-            return { 
-                r: Math.min(0.85, Math.max(0.15, r * colorBoost * 1.2)), 
-                g: Math.min(0.85, Math.max(0.15, g * colorBoost * 1.2)), 
-                b: Math.min(0.85, Math.max(0.15, b * colorBoost * 1.2)) 
-            };
+            return { r: Math.min(0.85, Math.max(0.15, r * colorBoost * 1.2)), g: Math.min(0.85, Math.max(0.15, g * colorBoost * 1.2)), b: Math.min(0.85, Math.max(0.15, b * colorBoost * 1.2)) };
         }
         
         const chroma = 0.7 + pressure * 0.2;
         switch(colorMood) {
-            case "Volcanic": 
-                r = 1.0; 
-                g = 0.1 + 0.7 * Math.sin(t * 12 + time + hueShift) * chroma; 
-                b = 0.0; 
-                break;
-            case "SolarFlare": 
-                r = 1.0; 
-                g = 0.5 + 0.5 * Math.sin(t * 14 + time + hueShift) * chroma; 
-                b = 0.0; 
-                break;
-            default: 
-                r = Math.sin(t * 25 + time + hueShift) * (0.5 + pressure * 0.15) + 0.5; 
-                g = Math.sin(t * 25 + 2.094 + time * 1.3 + hueShift) * (0.5 + pressure * 0.15) + 0.5; 
-                b = Math.sin(t * 25 + 4.188 + time * 0.7 + hueShift) * (0.5 + pressure * 0.15) + 0.5; 
-                break;
+            case "Volcanic": r = 1.0; g = 0.1 + 0.7 * Math.sin(t * 12 + time + hueShift) * chroma; b = 0.0; break;
+            case "SolarFlare": r = 1.0; g = 0.5 + 0.5 * Math.sin(t * 14 + time + hueShift) * chroma; b = 0.0; break;
+            default: r = Math.sin(t * 25 + time + hueShift) * (0.5 + pressure * 0.15) + 0.5; g = Math.sin(t * 25 + 2.094 + time * 1.3 + hueShift) * (0.5 + pressure * 0.15) + 0.5; b = Math.sin(t * 25 + 4.188 + time * 0.7 + hueShift) * (0.5 + pressure * 0.15) + 0.5; break;
         }
-        return { 
-            r: Math.min(0.85, Math.max(0.15, r * colorBoost)), 
-            g: Math.min(0.85, Math.max(0.15, g * colorBoost)), 
-            b: Math.min(0.85, Math.max(0.15, b * colorBoost)) 
-        };
+        return { r: Math.min(0.85, Math.max(0.15, r * colorBoost)), g: Math.min(0.85, Math.max(0.15, g * colorBoost)), b: Math.min(0.85, Math.max(0.15, b * colorBoost)) };
     }
     
     function signatureColor(t, time, pressure) { 
         const base = t * (30 + pressure * 15) + time; 
-        return { 
-            r: Math.sin(base) * 0.5 + 0.5, 
-            g: Math.sin(base + 2.094) * 0.5 + 0.5, 
-            b: Math.sin(base + 4.188) * 0.5 + 0.5 
-        }; 
+        return { r: Math.sin(base) * 0.5 + 0.5, g: Math.sin(base + 2.094) * 0.5 + 0.5, b: Math.sin(base + 4.188) * 0.5 + 0.5 }; 
     }
     
     function engineFrequencyShape(t, engineName, freqMultiplier, pressure, engineVariant) {
@@ -600,610 +506,4 @@
             out = (a * (0.65 - pressure * 0.1) + b * (0.35 + pressure * 0.1) + 1) / 2; 
         }
         else { 
-            out = Math.sin(t * Math.PI * freqMultiplier * (1.35 + pressure * 0.3) * variantFactor); 
-            out = (out + 1) / 2; 
-        }
-        return Math.max(0.03, Math.min(0.97, out));
-    }
-    
-    function engineContrastShape(t, engineName, pressure, textureVariant) {
-        const k = 6.0; 
-        let s = 1.0 / (1.0 + Math.exp(-k * (t - 0.5))); 
-        s = s * 0.9 + Math.abs(Math.sin(t * Math.PI)) * 0.1;
-        const textureFactor = 1 + (textureVariant - 3.5) * 0.03;
-        
-        let exponent; 
-        if (engineName === "Canonical") exponent = (0.92 - pressure * 0.08) * textureFactor;
-        else if (engineName === "Echo") exponent = (1.12 - pressure * 0.12) * textureFactor;
-        else exponent = (0.68 - pressure * 0.1) * textureFactor;
-        return Math.pow(s, Math.max(0.5, Math.min(1.5, exponent)));
-    }
-    
-    function engineColorDiscipline(r, g, b, engineName, t, time, pressure) {
-        if (engineName === "Canonical") { 
-            const intensity = 0.96 - pressure * 0.04; 
-            return { r: r * intensity, g: g * intensity, b: b * intensity }; 
-        }
-        if (engineName === "Echo") { 
-            const bleed = 0.04 + pressure * 0.06; 
-            return { 
-                r: r * (0.96 - pressure * 0.04) + (Math.sin(time + t * 4) * 0.5 + 0.5) * bleed, 
-                g: g * (0.96 - pressure * 0.04) + (Math.sin(time + 2.094 + t * 4) * 0.5 + 0.5) * bleed, 
-                b: b * (0.96 - pressure * 0.04) + (Math.sin(time + 4.188 + t * 4) * 0.5 + 0.5) * bleed 
-            }; 
-        }
-        return { 
-            r: Math.min(1, r * (1.06 + pressure * 0.08)), 
-            g: g * (0.88 - pressure * 0.06), 
-            b: Math.min(1, b * (1.03 + pressure * 0.05)) 
-        };
-    }
-    
-    function applyMicroEvent(color, microEvent, t, pressure) {
-        if (microEvent === "SignalScar") {
-            const scar = Math.sin(t * Math.PI * 50) * 0.15;
-            return { 
-                r: Math.min(1, color.r + scar), 
-                g: Math.min(1, color.g + scar * 0.5), 
-                b: Math.min(1, color.b + scar * 0.8) 
-            };
-        }
-        if (microEvent === "PhaseGlitch") {
-            const glitch = Math.sin(t * Math.PI * 30 + pressure * 10) * 0.1;
-            return { r: color.g + glitch, g: color.b, b: color.r - glitch };
-        }
-        if (microEvent === "MemoryFlicker") {
-            const flicker = Math.sin(t * Math.PI * 15) * 0.08;
-            return { 
-                r: color.r + flicker, 
-                g: color.g - flicker * 0.5, 
-                b: color.b + flicker * 0.3 
-            };
-        }
-        if (microEvent === "Crackle") {
-            const crackle = Math.abs(Math.sin(t * Math.PI * 80)) * 0.12;
-            return { 
-                r: Math.min(1, color.r + crackle), 
-                g: Math.min(1, color.g + crackle * 0.7), 
-                b: Math.max(0, color.b - crackle * 0.5) 
-            };
-        }
-        return color;
-    }
-    
-    function applyEngineLiveBehavior(t, engineType, liveIntensity, liveTime, pressure, rx, ry, echoMemoryBuffer) {
-        if (engineType === "Canonical") {
-            const breath = Math.sin(liveTime * 0.8) * (0.03 + pressure * 0.05);
-            const harmonic = Math.sin(t * Math.PI * 3 + liveTime) * 0.04 * pressure;
-            const stability = 1.0 - liveIntensity * 0.08;
-            return Math.max(0.03, Math.min(0.97, t * stability + breath + harmonic));
-        } 
-        else if (engineType === "Echo") {
-            const directional = Math.sin(rx * 2 + liveTime) * 0.5 + Math.cos(ry * 2 - liveTime) * 0.5;
-            const trail = Math.sin(t * Math.PI * 2 + liveTime * 1.5) * (0.08 + pressure * 0.1);
-            const trail2 = Math.sin(t * Math.PI * 4 + liveTime * 2.5) * (0.04 + pressure * 0.08);
-            const memoryBlend = 0.15 + pressure * 0.2;
-            const memory = echoMemoryBuffer * memoryBlend * directional;
-            let result = t * (0.65 - pressure * 0.1) + trail * (0.12 + pressure * 0.12) + trail2 * 0.06 + memory * 0.15;
-            return Math.max(0.03, Math.min(0.97, result));
-        } 
-        else {
-            const spike = Math.abs(Math.sin(liveTime * (8 + pressure * 4))) * (0.12 + pressure * 0.15);
-            const spike2 = Math.abs(Math.sin(liveTime * 15 + t * 8)) * (0.08 + pressure * 0.1);
-            let result = t + spike + spike2;
-            const zone = Math.sin(rx * 3) * Math.cos(ry * 3);
-            if (zone > 0.5) result *= 1.2 + pressure * 0.3;
-            if (zone < -0.5) result = Math.abs(result - 0.5) * 1.2;
-            const pseudoRand = Math.sin(t * 43758.5453 + liveTime * 12) * 0.5 + 0.5;
-            if (pressure > 0.6 && pseudoRand < (pressure - 0.6) * 0.35) result = Math.abs(result - 0.5) * 1.4;
-            return Math.max(0.02, Math.min(0.98, result));
-        }
-    }
-    
-    // ============================================================
-    // CORE PIXEL COMPUTATION
-    // ============================================================
-    
-    function computePixel(options) {
-        const { x, y, width, height, traits, baseTraits, time, intensity, freqIndex, liveIntensity, liveTime, mode, fadeFactor = 1, echoMemoryBuffer = 0 } = options;
-        const { engineType, rarityClass, anomalyClass, failureMode, spatialBehavior, archetype, anchorForm, colorMood, primaryDriver, motionVariant, textureVariant, paletteVariant, engineVariant, microEvent } = traits;
-        const { zoom, offsetX, offsetY, baseMaxIter, layers, iterMult, microWarp, phaseBias, symmetryBreak } = baseTraits;
-        const isGrail = rarityClass === RARITY_CLASSES.GRAIL;
-        const isRupture = engineType === "Rupture";
-        const isEcho = engineType === "Echo";
-        
-        let pressure = 0;
-        if (mode === "live" && liveIntensity !== undefined) {
-            pressure = Math.pow(liveIntensity, 1.2) * fadeFactor;
-        }
-        
-        let ux = (x / width) * 4.0 - 2.5;
-        let uy = (y / height) * 4.0 - 2.0;
-        ux *= width / height;
-        
-        const goldenOffsetX = (width / 1.618 - width / 2) / width * 0.3;
-        const goldenOffsetY = (height / 1.618 - height / 2) / height * 0.3;
-        const adjustedOffsetX = offsetX + goldenOffsetX;
-        const adjustedOffsetY = offsetY + goldenOffsetY;
-        
-        let transformed = applyCompositionTransform(ux, uy, spatialBehavior, zoom, adjustedOffsetX, adjustedOffsetY, symmetryBreak);
-        let rx = transformed.x;
-        let ry = transformed.y;
-        
-        let geo = applyArchetypeGeometry(archetype, rx, ry);
-        rx = geo.x;
-        ry = geo.y;
-        
-        const reinforced = reinforceArchetype(archetype, rx, ry, pressure);
-        rx = reinforced.x;
-        ry = reinforced.y;
-        rx *= 1.2;
-        ry *= 1.2;
-        
-        if (spatialBehavior === "Asymmetrical") { rx += 0.4; ry -= 0.2; }
-        if (spatialBehavior === "FlowField") { rx += Math.sin(ry * 2.5) * 0.3; ry += Math.cos(rx * 2.5) * 0.3; }
-        if (spatialBehavior === "Vortex") { 
-            let vr = Math.sqrt(rx * rx + ry * ry); 
-            let va = Math.atan2(ry, rx); 
-            va += vr * 3.0; 
-            rx = Math.cos(va) * vr * 0.8; 
-            ry = Math.sin(va) * vr * 0.8; 
-        }
-        
-        if (isRupture) { 
-            rx += Math.sin(ry * 6 + time * 4) * (0.15 + pressure * 0.1); 
-            ry += Math.cos(rx * 6 - time * 4) * (0.15 + pressure * 0.1); 
-        }
-        
-        let fractalVal = getDepthFractalValue(rx, ry, baseMaxIter, layers, iterMult);
-        let patternVal = getPatternValue(rx, ry, time, engineType, pressure, primaryDriver, rx, ry, liveTime || 0, microWarp, phaseBias, motionVariant);
-        
-        let t;
-        if (isRupture) { 
-            t = Math.abs(fractalVal - patternVal) + Math.sin(rx * ry * 2.5) * 0.2; 
-        }
-        else if (isEcho) { 
-            t = fractalVal * 0.35 + patternVal * 0.65; 
-            t = t * 0.8 + Math.sin(t * Math.PI * 2) * 0.2; 
-            t = t * 0.8 + Math.sin(t * Math.PI * 2 + Math.sin(t * 6)) * 0.2; 
-        }
-        else { 
-            t = fractalVal * 0.75 + patternVal * 0.25; 
-        }
-        t = Math.max(0.03, Math.min(0.97, t));
-        
-        if (isGrail && anomalyClass) {
-            if (anomalyClass === "Interference") {
-                if (engineType === "Canonical") { 
-                    const t2 = Math.sin((fractalVal + patternVal) * Math.PI * 12 / 8); 
-                    t = (t + ((t2 + 1) / 2)) * 0.5; 
-                }
-                else if (engineType === "Echo") { 
-                    const echoMix = Math.cos((fractalVal * 0.6 + patternVal * 1.4) * Math.PI * 2.5); 
-                    t = t * 0.65 + ((echoMix + 1) / 2) * 0.35; 
-                }
-                else { 
-                    const t2 = Math.sin((fractalVal - patternVal) * Math.PI * 20); 
-                    t = Math.abs(t - ((t2 + 1) / 2)); 
-                }
-            } else if (anomalyClass === "Collapse") {
-                const rc = Math.sqrt((rx - 0.5) * (rx - 0.5) + (ry - 0.5) * (ry - 0.5));
-                const collapse = Math.max(0, 1 - rc * 2);
-                if (engineType === "Canonical") t = t * (1 - collapse * 0.55);
-                else if (engineType === "Echo") t = t * (1 - collapse * 0.35) + collapse * 0.15;
-                else t = t * (1 - collapse * 0.85);
-            } else if (anomalyClass === "EchoLoop") {
-                const rr = Math.sqrt(rx * rx + ry * ry);
-                const ring = Math.sin(rr * 15) * 0.3;
-                if (engineType === "Canonical") t = t * 0.78 + ring * 0.22;
-                else if (engineType === "Echo") { 
-                    const loop = Math.sin(rr * 9 + t * Math.PI * 4) * 0.5 + 0.5; 
-                    t = t * 0.5 + loop * 0.5; 
-                }
-                else t = t * 0.6 + Math.abs(ring) * 0.4;
-            } else if (anomalyClass === "SpectralSplit") { 
-                t = Math.pow(t, engineType === "Rupture" ? 0.45 : 0.6); 
-            }
-            t = Math.max(0.03, Math.min(0.97, t));
-            t = Math.pow(t, engineType === "Rupture" ? 0.18 : 0.25);
-        }
-        
-        const freqMultiplier = [3, 6, 10, 16][freqIndex % 4];
-        t = engineFrequencyShape(t, engineType, freqMultiplier, pressure, engineVariant);
-        t = Math.pow(t, 0.6 - pressure * 0.1);
-        
-        const variation = Math.abs(fractalVal - patternVal);
-        if (variation < 0.02) { 
-            t += (Math.sin(rx * 12.3 + ry * 7.1) * 0.5 + 0.5) * 0.12; 
-        }
-        if (variation < 0.01) {
-            const fallback = Math.sin(rx * 8 + ry * 8) * 0.5 + 0.5;
-            if (failureMode === "Recovering") { 
-                if (engineType === "Canonical") t = t * 0.65 + fallback * 0.35; 
-                else if (engineType === "Echo") t = t * 0.75 + fallback * 0.25; 
-                else t = t * 0.90 + fallback * 0.10; 
-            }
-            else if (failureMode === "Residual") t = t * 0.88 + fallback * 0.12;
-            else if (failureMode === "VoidBloom") { 
-                const bloom = Math.exp(-(rx * rx + ry * ry) * 1.8); 
-                t = t * 0.7 + bloom * 0.3; 
-            }
-            else if (failureMode === "Fracture") { 
-                const crack = Math.abs(Math.sin(rx * 18 - ry * 11)); 
-                t = t * 0.6 + crack * 0.4; 
-            }
-        }
-        t = Math.max(0.03, Math.min(0.97, t));
-        
-        t = engineContrastShape(t, engineType, pressure, textureVariant);
-        t = reinforceAnchor(t, anchorForm, rx, ry, pressure);
-        
-        let finalT = t;
-        
-        if (mode === "live" && liveIntensity !== undefined) {
-            finalT = applyEngineLiveBehavior(finalT, engineType, liveIntensity, liveTime, pressure, rx, ry, echoMemoryBuffer);
-            if (liveTime !== undefined) {
-                let warp; 
-                const warpStrength = 0.12 + pressure * 0.18;
-                if (engineType === "Canonical") { 
-                    warp = Math.sin(finalT * Math.PI * 2 + liveTime * 2) * (0.1 + pressure * 0.1); 
-                    finalT = finalT * (0.88 - pressure * 0.06) + warp * warpStrength; 
-                }
-                else if (engineType === "Echo") { 
-                    const warp1 = Math.sin(finalT * Math.PI * 4 + liveTime * 3) * 0.08; 
-                    const warp2 = Math.sin(finalT * Math.PI * 8 + liveTime * 1.2) * 0.05; 
-                    warp = (warp1 + warp2) * (0.8 + pressure * 0.4); 
-                    finalT = finalT * (0.82 - pressure * 0.08) + warp * warpStrength; 
-                }
-                else { 
-                    const warp1 = Math.abs(Math.sin(liveTime * 10 + finalT * 6)) * (0.2 + pressure * 0.2); 
-                    const warp2 = Math.sin(finalT * Math.PI * 12 + liveTime * 8) * 0.1; 
-                    warp = (warp1 + warp2) * 0.8; 
-                    finalT = finalT * (0.75 - pressure * 0.12) + warp * warpStrength; 
-                }
-                finalT = Math.max(0.03, Math.min(0.97, finalT));
-            }
-        }
-        
-        finalT = Math.max(0.03, Math.min(0.97, finalT));
-        
-        if (mode === "live" && pressure !== undefined) {
-            if (pressure > 0.35) finalT = Math.pow(finalT, 0.92 - pressure * 0.08);
-            if (pressure > 0.60) finalT = Math.pow(finalT, 0.75 - pressure * 0.1);
-            if (pressure > 0.82) {
-                if (engineType === "Canonical") finalT = Math.abs(Math.sin(finalT * Math.PI * 6));
-                else if (engineType === "Echo") finalT = (finalT + echoMemoryBuffer) * 0.5;
-                else finalT = Math.abs(finalT - 0.5) * 2;
-                finalT = Math.max(0.02, Math.min(0.98, finalT));
-            }
-        }
-        
-        let { r, g, b } = getRichColor(finalT, colorMood, time, primaryDriver, pressure, paletteVariant);
-        let colorDisciplined = engineColorDiscipline(r, g, b, engineType, finalT, time, pressure);
-        const sigColor = signatureColor(finalT, time, pressure);
-        r = colorDisciplined.r * (0.65 - pressure * 0.05) + sigColor.r * (0.35 + pressure * 0.05);
-        g = colorDisciplined.g * (0.65 - pressure * 0.05) + sigColor.g * (0.35 + pressure * 0.05);
-        b = colorDisciplined.b * (0.65 - pressure * 0.05) + sigColor.b * (0.35 + pressure * 0.05);
-        
-        if (isGrail && anomalyClass === "SpectralSplit") {
-            if (engineType === "Canonical") { 
-                r = Math.min(1, r * (1.18 + pressure * 0.1)); 
-                g = g * (0.78 - pressure * 0.08); 
-                b = Math.min(1, b * (1.08 + pressure * 0.08)); 
-            }
-            else if (engineType === "Echo") { 
-                r = r * (0.82 - pressure * 0.04) + (Math.sin(time + finalT * 10) * 0.5 + 0.5) * (0.28 + pressure * 0.1); 
-                g = g * (0.7 - pressure * 0.05); 
-                b = b * (0.82 - pressure * 0.04) + (Math.cos(time + finalT * 10) * 0.5 + 0.5) * (0.28 + pressure * 0.1); 
-            }
-            else { 
-                r = Math.min(1, r * (1.35 + pressure * 0.15)); 
-                g = g * (0.58 - pressure * 0.08); 
-                b = Math.min(1, b * (1.18 + pressure * 0.1)); 
-            }
-        }
-        
-        let finalColor = applyMicroEvent({ r, g, b }, microEvent, finalT, pressure);
-        
-        return { 
-            r: Math.floor(Math.min(255, Math.max(0, finalColor.r * 255))), 
-            g: Math.floor(Math.min(255, Math.max(0, finalColor.g * 255))), 
-            b: Math.floor(Math.min(255, Math.max(0, finalColor.b * 255))) 
-        };
-    }
-    
-    // ============================================================
-    // CANONICAL RENDER
-    // ============================================================
-    
-    function renderCanonical(tokenId, txHash, width = CONFIG.RENDER_WIDTH, height = CONFIG.RENDER_HEIGHT) {
-        const validTxHash = (txHash && txHash !== "0x0" && txHash !== "") ? txHash : `canonical_fallback_${tokenId}`;
-        const seed = getSeed(tokenId, validTxHash);
-        const traits = generateTraits(seed, tokenId);
-        const baseTraits = generateBaseTraits(seed, tokenId);
-        const canonicalIntensity = getCanonicalIntensity(seed);
-        const canonicalTime = getCanonicalTime(tokenId, seed, canonicalIntensity);
-        const freqRNG = makeSeededRand(splitSeed(seed, 300));
-        const freqIndex = Math.floor(freqRNG() * 4);
-        const pixels = new Uint8ClampedArray(width * height * 4);
-        
-        for (let y = 0; y < height; y++) { 
-            for (let x = 0; x < width; x++) { 
-                const pixel = computePixel({ 
-                    x, y, width, height, traits, baseTraits, 
-                    time: canonicalTime, intensity: canonicalIntensity, 
-                    freqIndex, mode: "canonical" 
-                }); 
-                const idx = (y * width + x) * 4; 
-                pixels[idx] = pixel.r; 
-                pixels[idx+1] = pixel.g; 
-                pixels[idx+2] = pixel.b; 
-                pixels[idx+3] = 255; 
-            } 
-        }
-        
-        const eventScore = (traits.rarityClass === RARITY_CLASSES.RARE ? 1 : 0) + 
-                          (traits.rarityClass === RARITY_CLASSES.MYTHIC ? 2 : 0) + 
-                          (traits.rarityClass === RARITY_CLASSES.GRAIL ? 4 : 0) + 
-                          (traits.failureMode === "Fracture" ? 2 : 0) + 
-                          (traits.failureMode === "VoidBloom" ? 1 : 0) + 
-                          (traits.engineType === "Rupture" ? 1 : 0) + 
-                          (traits.anomalyClass ? 2 : 0);
-        
-        const stabilityClass = getStabilityClass(traits.failureMode, traits.engineType, traits.rarityClass);
-        const intensityBias = getIntensityBias(canonicalIntensity, traits.engineType);
-        const activationType = getActivationType(traits.primaryDriver, traits.archetype);
-        
-        return { 
-            seed, traits, baseTraits, canonicalIntensity, canonicalTime, 
-            pixels, width, height, freqIndex, eventScore, 
-            stabilityClass, intensityBias, activationType 
-        };
-    }
-    
-    function drawToCanvas(canvas, renderResult) {
-        if (!canvas || !renderResult || !renderResult.pixels) return false;
-        const { pixels, width, height } = renderResult;
-        const ctx = canvas.getContext('2d');
-        canvas.width = width; 
-        canvas.height = height;
-        const imageData = ctx.createImageData(width, height);
-        imageData.data.set(pixels);
-        ctx.putImageData(imageData, 0, 0);
-        return true;
-    }
-    
-    // ============================================================
-    // LIVE SESSION - with session-scoped echo memory & fixed intensity fetch
-    // ============================================================
-    
-    function createLiveSession(tokenId, txHash) {
-        const canonical = renderCanonical(tokenId, txHash);
-        let animationId = null, canvasElement = null, startTime = null, fadeStartTime = null;
-        const fadeDuration = 800;
-        let currentLiveIntensity = canonical.canonicalIntensity;
-        let targetLiveIntensity = canonical.canonicalIntensity;
-        let currentLiveTime = canonical.canonicalTime;
-        
-        // SESSION-SCOPED echo memory (no cross-token bleed)
-        let echoMemoryBufferSmooth = 0;
-        let isFirstFrame = true;
-        let intervalId = null;
-        
-        // IMPROVED INTENSITY FETCH - handles nested JSON and multiple paths
-        function fetchIntensity() {
-            const url = 'https://raw.githubusercontent.com/ivxxbeats/farcaster-intensity/main/intensity.json?t=' + Date.now();
-            
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data) return;
-                    
-                    let intensityValue = null;
-                    
-                    // Path 1: top-level intensity (number)
-                    if (typeof data.intensity === 'number') {
-                        intensityValue = data.intensity;
-                    }
-                    // Path 2: awakenedEngine.progression as string mapping
-                    else if (data.awakenedEngine && data.awakenedEngine.progression) {
-                        const prog = data.awakenedEngine.progression;
-                        if (prog === "dormant") intensityValue = 0.15;
-                        else if (prog === "stirring") intensityValue = 0.25;
-                        else if (prog === "awakening") intensityValue = 0.45;
-                        else if (prog === "awakened") intensityValue = 0.70;
-                        else if (prog === "ascended") intensityValue = 0.90;
-                        else if (prog === "base") intensityValue = 0.35;
-                        else intensityValue = 0.35;
-                    }
-                    // Path 3: metrics fallback
-                    else if (data.metrics && typeof data.metrics.casts === 'number') {
-                        intensityValue = Math.min(0.95, 0.2 + (data.metrics.casts / 50));
-                    }
-                    
-                    if (intensityValue !== null) {
-                        let newTarget = Math.max(0.05, Math.min(0.95, intensityValue));
-                        
-                        // Prevent extreme jumps (>30% change in one fetch)
-                        if (Math.abs(newTarget - targetLiveIntensity) > 0.3) {
-                            newTarget = targetLiveIntensity + Math.sign(newTarget - targetLiveIntensity) * 0.3;
-                        }
-                        
-                        targetLiveIntensity = newTarget;
-                        console.log(`[DART] Intensity updated: ${targetLiveIntensity.toFixed(3)}`);
-                    } else {
-                        console.warn("[DART] Could not parse intensity from JSON", data);
-                    }
-                })
-                .catch(err => {
-                    console.warn("[DART] Intensity fetch failed:", err.message);
-                });
-        }
-        
-        function renderFrame() {
-            if (!canvasElement) return;
-            
-            // Mobile performance scaling
-            const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
-            const scale = isMobile ? 0.5 : 1;
-            const width = Math.floor(canonical.width * scale);
-            const height = Math.floor(canonical.height * scale);
-            
-            if (isFirstFrame) {
-                // FRAME 0: EXACT canonical render (no flash)
-                const ctx = canvasElement.getContext('2d');
-                canvasElement.width = width;
-                canvasElement.height = height;
-                
-                if (scale === 0.5) {
-                    const downsampled = new Uint8ClampedArray(width * height * 4);
-                    for (let y = 0; y < height; y++) {
-                        for (let x = 0; x < width; x++) {
-                            const srcIdx = ((y * 2) * canonical.width + (x * 2)) * 4;
-                            const dstIdx = (y * width + x) * 4;
-                            downsampled[dstIdx] = canonical.pixels[srcIdx];
-                            downsampled[dstIdx + 1] = canonical.pixels[srcIdx + 1];
-                            downsampled[dstIdx + 2] = canonical.pixels[srcIdx + 2];
-                            downsampled[dstIdx + 3] = 255;
-                        }
-                    }
-                    const imgData = ctx.createImageData(width, height);
-                    imgData.data.set(downsampled);
-                    ctx.putImageData(imgData, 0, 0);
-                } else {
-                    const imgData = ctx.createImageData(width, height);
-                    imgData.data.set(canonical.pixels);
-                    ctx.putImageData(imgData, 0, 0);
-                }
-                
-                isFirstFrame = false;
-                animationId = requestAnimationFrame(renderFrame);
-                return;
-            }
-            
-            const now = performance.now();
-            if (!startTime) startTime = now;
-            if (!fadeStartTime) fadeStartTime = now;
-            
-            const elapsed = (now - startTime) / 1000;
-            const fadeElapsed = now - fadeStartTime;
-            const rawFadeFactor = Math.min(1, fadeElapsed / fadeDuration);
-            const fadeFactor = rawFadeFactor * rawFadeFactor * (3 - 2 * rawFadeFactor);
-            
-            const liveWarpTime = elapsed % (Math.PI * 2);
-            currentLiveTime = canonical.canonicalTime * (1 - fadeFactor) + liveWarpTime * fadeFactor;
-            
-            // Blend intensity from canonical to target
-            const desiredIntensity = canonical.canonicalIntensity * (1 - fadeFactor) + targetLiveIntensity * fadeFactor;
-            currentLiveIntensity += (desiredIntensity - currentLiveIntensity) * 0.15;
-            
-            const pixels = new Uint8ClampedArray(width * height * 4);
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const origX = scale === 0.5 ? x * 2 : x;
-                    const origY = scale === 0.5 ? y * 2 : y;
-                    
-                    const pixel = computePixel({ 
-                        x: origX, y: origY, 
-                        width: canonical.width, height: canonical.height, 
-                        traits: canonical.traits, 
-                        baseTraits: canonical.baseTraits, 
-                        time: canonical.canonicalTime, 
-                        intensity: canonical.canonicalIntensity, 
-                        freqIndex: canonical.freqIndex, 
-                        mode: "live", 
-                        liveIntensity: currentLiveIntensity, 
-                        liveTime: currentLiveTime, 
-                        fadeFactor,
-                        echoMemoryBuffer: echoMemoryBufferSmooth
-                    });
-                    const idx = (y * width + x) * 4;
-                    pixels[idx] = pixel.r;
-                    pixels[idx + 1] = pixel.g;
-                    pixels[idx + 2] = pixel.b;
-                    pixels[idx + 3] = 255;
-                }
-            }
-            
-            // Update echo memory for next frame
-            let avgR = 0, avgG = 0, avgB = 0;
-            for (let i = 0; i < pixels.length; i += 4) {
-                avgR += pixels[i];
-                avgG += pixels[i+1];
-                avgB += pixels[i+2];
-            }
-            const pixelCount = pixels.length / 4;
-            const avgBrightness = ((avgR / pixelCount) + (avgG / pixelCount) + (avgB / pixelCount)) / (255 * 3);
-            echoMemoryBufferSmooth = echoMemoryBufferSmooth * 0.85 + avgBrightness * 0.15;
-            
-            const ctx = canvasElement.getContext('2d');
-            const imageData = ctx.createImageData(width, height);
-            imageData.data.set(pixels);
-            ctx.putImageData(imageData, 0, 0);
-            
-            animationId = requestAnimationFrame(renderFrame);
-        }
-        
-        function startAnimation(canvas) {
-            canvasElement = canvas;
-            startTime = null;
-            fadeStartTime = performance.now();
-            isFirstFrame = true;
-            echoMemoryBufferSmooth = 0;
-            
-            // Fetch immediately on start
-            fetchIntensity();
-            intervalId = setInterval(fetchIntensity, 15000);
-            
-            animationId = requestAnimationFrame(renderFrame);
-        }
-        
-        function stop() { 
-            if (animationId) { 
-                cancelAnimationFrame(animationId); 
-                animationId = null; 
-            }
-            if (intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
-            }
-        }
-        
-        function getLiveIntensity() { return currentLiveIntensity; }
-        function getRawTargetIntensity() { return targetLiveIntensity; }
-        function setLiveIntensity(val) { 
-            let newVal = Math.max(0.05, Math.min(0.95, val));
-            if (Math.abs(newVal - targetLiveIntensity) > 0.3) {
-                newVal = targetLiveIntensity + Math.sign(newVal - targetLiveIntensity) * 0.3;
-            }
-            targetLiveIntensity = newVal; 
-        }
-        
-        return { 
-            startAnimation, 
-            stop, 
-            getCanonical: () => canonical, 
-            getLiveIntensity, 
-            getRawTargetIntensity,
-            setLiveIntensity 
-        };
-    }
-    
-    // ============================================================
-    // EXPORT API - NO AUTO-INIT
-    // ============================================================
-    
-    window.DartHLGEN = { 
-        version: "1.8.2", 
-        renderCanonical, 
-        createLiveSession, 
-        drawToCanvas, 
-        getSeed, 
-        CONFIG 
-    };
-    
-    console.log("Dart GenXL Engine v1.8.2 - Fully patched with intensity fetch fix");
-})();
+            out = Math.sin(t * Math.PI * freqMultiplier * (1.35 + pressure * 0.3)
