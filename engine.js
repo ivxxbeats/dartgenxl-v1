@@ -542,7 +542,14 @@
             ry = Math.sin(va) * vr * 0.8;
         }
         
-        if (isRupture) {
+                        // Rupture instability scales with intensity
+                if (mode === "live" && liveIntensity !== undefined && engineType === "Rupture") {
+                    const instabilityScale = 0.5 + (liveIntensity * 1.0);
+                    if (Math.random() < liveIntensity * 0.15) {
+                        finalT = Math.abs(finalT - 0.5) * (1 + instabilityScale * 0.3);
+                    }
+                }
+if (isRupture) {
             rx += Math.sin(ry * 6 + time * 4) * 0.15;
             ry += Math.cos(rx * 6 - time * 4) * 0.15;
         }
@@ -553,11 +560,15 @@
         let t;
         if (isRupture) {
             t = Math.abs(fractalVal - patternVal) + Math.sin(rx * ry * 2.5) * 0.2;
-        } else if (isEcho) {
-            t = fractalVal * 0.35 + patternVal * 0.65;
-            t = t * 0.8 + Math.sin(t * Math.PI * 2) * 0.2;
-            t = t * 0.8 + Math.sin(t * Math.PI * 2 + Math.sin(t * 6)) * 0.2;
-        } else {
+        } else                 // Echo trail length based on intensity
+                if (mode === "live" && liveIntensity !== undefined && engineType === "Echo") {
+                    // Higher intensity = longer trails
+                    const trailLength = 0.5 + (liveIntensity * 0.5);
+                    const echoMemory = window._echoMemory || 0;
+                    finalT = finalT * (1 - trailLength * 0.3) + echoMemory * (trailLength * 0.3);
+                    window._echoMemory = finalT;
+                }
+                } else {
             t = fractalVal * 0.75 + patternVal * 0.25;
         }
         t = Math.max(0.03, Math.min(0.97, t));
@@ -639,10 +650,7 @@
             const intensityFactor = Math.pow(liveIntensity, 1.2);
             finalT = Math.pow(finalT, 1.0 - intensityFactor * 0.3);
             
-            if (liveTime !== undefined) {
-                const warp = Math.sin(finalT * Math.PI * 2 + liveTime * 3);
-                finalT = Math.max(0.03, Math.min(0.97, finalT * 0.85 + (warp + 1) / 2 * 0.15));
-            }
+            $speedPatch
         }
         
         finalT = Math.max(0.03, Math.min(0.97, finalT));
@@ -917,11 +925,19 @@
                 ctx.fillRect(0, 0, w, h);
             }
             
-            // Intensity meter
-            ctx.fillStyle = "rgba(0,0,0,0.6)";
-            ctx.fillRect(10, h - 30, 100, 5);
-            ctx.fillStyle = `hsl(${intensity * 120}, 100%, 55%)`;
-            ctx.fillRect(10, h - 30, intensity * 100, 5);
+                            // Animated intensity meter with pulse
+                if (mode === "live" && liveIntensity !== undefined) {
+                    const pulseIntensity = liveIntensity + Math.sin(Date.now() * 0.005) * 0.05;
+                    ctx.fillStyle = "rgba(0,0,0,0.6)";
+                    ctx.fillRect(10, h - 30, 100, 5);
+                    ctx.fillStyle = `hsl(${pulseIntensity * 120}, 100%, 55%)`;
+                    ctx.fillRect(10, h - 30, pulseIntensity * 100, 5);
+                    
+                    // Add text label
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "8px monospace";
+                    ctx.fillText(`${Math.round(liveIntensity * 100)}%`, 115, h - 25);
+                }
         }
         
         function fetchIntensity() {
@@ -939,7 +955,16 @@
             canvasElement = canvas;
             let startTime = null;
             
-            function animate(timestamp) {
+                            // Dynamic frame rate based on intensity (higher intensity = smoother)
+                if (mode === "live" && liveIntensity !== undefined) {
+                    const targetFPS = 30 + (liveIntensity * 30); // 30-60 FPS
+                    const frameTime = 1000 / targetFPS;
+                    const now = performance.now();
+                    if (window._lastFrameTime && (now - window._lastFrameTime) < frameTime) {
+                        return; // Skip this frame
+                    }
+                    window._lastFrameTime = now;
+                }
                 if (!startTime) startTime = timestamp;
                 const elapsed = (timestamp - startTime) / 1000;
                 currentLiveTime = elapsed % (Math.PI * 2);
@@ -1078,5 +1103,10 @@
     console.log("  ✅ Primary Driver: performance style");
     
 })();
+
+
+
+
+
 
 
