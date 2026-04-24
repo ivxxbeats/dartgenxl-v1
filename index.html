@@ -56,12 +56,6 @@
             border-radius: 20px;
         }
         
-        /* CANVAS - NO UI OVERLAY, CLEAN */
-        .canvas-wrapper {
-            position: relative;
-            display: block;
-        }
-        
         canvas {
             display: block;
             margin: 0 auto;
@@ -73,7 +67,6 @@
             background: #000000;
         }
         
-        /* INTENSITY SECTION - BELOW CANVAS, NOT OVERLAY */
         .intensity-section {
             margin-top: 20px;
             background: #0d0d12;
@@ -250,9 +243,14 @@
             50% { opacity: 0; }
         }
         
-        /* CANONICAL INTENSITY HIGHLIGHT */
         .canonical-value {
             color: #5a5aff !important;
+        }
+        
+        .fetch-status {
+            font-size: 8px;
+            color: #5a5aff;
+            margin-left: 8px;
         }
         
         @media (max-width: 640px) {
@@ -268,16 +266,12 @@
             <div class="badge">THE ART OF FARCASTER</div>
         </div>
         
-        <!-- CANVAS - PURE ART, NO OVERLAYS -->
-        <div class="canvas-wrapper">
-            <canvas id="artCanvas" width="640" height="640"></canvas>
-        </div>
+        <canvas id="artCanvas" width="640" height="640"></canvas>
         
-        <!-- INTENSITY SECTION - BELOW CANVAS -->
         <div class="intensity-section">
             <div class="intensity-label">
                 <span id="intensityLabel">LIVE INTENSITY</span>
-                <span id="intensityPercent">—</span>
+                <span><span id="intensityPercent">—</span><span class="fetch-status" id="fetchStatus"></span></span>
             </div>
             <div class="intensity-bar-container">
                 <div class="intensity-bar-fill" id="intensityBar"></div>
@@ -288,7 +282,6 @@
             </div>
         </div>
         
-        <!-- TRAITS PANEL -->
         <div class="traits-panel">
             <div class="traits-title">TOKEN TRAITS</div>
             <div class="traits-grid" id="traitsGrid">
@@ -307,7 +300,6 @@
             </div>
         </div>
         
-        <!-- AFFECTS PANEL -->
         <div class="affects-panel">
             <div class="affects-title">INTENSITY PHASES</div>
             <div class="affects-text">
@@ -318,13 +310,13 @@
             </div>
         </div>
         
-        <!-- CONTROLS -->
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="TOKEN ID" value="1">
             <input type="text" id="hashInput" placeholder="TX HASH" value="0xabc123">
             <button id="renderBtn">⟳ RENDER</button>
             <button id="randomBtn">🎲 RANDOM</button>
             <button id="freezeBtn">❄️ FREEZE</button>
+            <button id="testIntensityBtn">📊 TEST INTENSITY</button>
         </div>
         
         <div class="status" id="status">
@@ -335,7 +327,8 @@
     <script src="engine.js"></script>
     <script>
         // ============================================================
-        // TERMINAL VIEWER - SHOWS RAW FETCHED INTENSITY
+        // TERMINAL VIEWER - UPDATED FOR ENGINE v1.8.2
+        // Shows raw fetched intensity | No UI over canvas
         // ============================================================
         
         const canvas = document.getElementById('artCanvas');
@@ -344,6 +337,7 @@
         const renderBtn = document.getElementById('renderBtn');
         const randomBtn = document.getElementById('randomBtn');
         const freezeBtn = document.getElementById('freezeBtn');
+        const testIntensityBtn = document.getElementById('testIntensityBtn');
         const statusDiv = document.getElementById('status');
         
         // UI Elements
@@ -352,6 +346,7 @@
         const intensityPercent = document.getElementById('intensityPercent');
         const modeBadge = document.getElementById('modeBadge');
         const pressureStageSpan = document.getElementById('pressureStage');
+        const fetchStatusSpan = document.getElementById('fetchStatus');
         
         // Trait elements
         const traitEngine = document.getElementById('traitEngine');
@@ -371,8 +366,9 @@
         let isFrozen = false;
         let intensityUpdateInterval = null;
         let currentCanonicalResult = null;
+        let lastFetchTime = 0;
         
-        function updateIntensityUI(intensity, isLive = true) {
+        function updateIntensityUI(intensity, isLive = true, source = "live") {
             const percent = Math.floor(intensity * 100);
             intensityBar.style.width = `${percent}%`;
             intensityPercent.textContent = `${percent}%`;
@@ -393,6 +389,26 @@
                 modeBadge.textContent = phaseText;
                 modeBadge.classList.add('live');
                 modeBadge.classList.remove('static');
+            }
+        }
+        
+        function updateFetchStatus(success, value = null) {
+            if (success && value !== null) {
+                fetchStatusSpan.textContent = `✓ ${(value * 100).toFixed(0)}%`;
+                fetchStatusSpan.style.color = "#5a5aff";
+                setTimeout(() => {
+                    if (fetchStatusSpan.textContent.includes('✓')) {
+                        fetchStatusSpan.textContent = '';
+                    }
+                }, 2000);
+            } else if (!success) {
+                fetchStatusSpan.textContent = "⚠ fetch failed";
+                fetchStatusSpan.style.color = "#ff6666";
+                setTimeout(() => {
+                    if (fetchStatusSpan.textContent.includes('failed')) {
+                        fetchStatusSpan.textContent = '';
+                    }
+                }, 3000);
             }
         }
         
@@ -449,7 +465,45 @@
             ctx.fillText(message, canvas.width/2, canvas.height/2);
         }
         
-        // FREEZE MODE - Canonical only, NO live intensity
+        // Test intensity fetch manually
+        async function testIntensityFetch() {
+            statusDiv.innerHTML = `TESTING INTENSITY FETCH... <span class="cursor"></span>`;
+            try {
+                const url = 'https://raw.githubusercontent.com/ivxxbeats/farcaster-intensity/main/intensity.json?t=' + Date.now();
+                const response = await fetch(url);
+                const data = await response.json();
+                console.log("Intensity test result:", data);
+                
+                let intensityValue = null;
+                if (typeof data.intensity === 'number') {
+                    intensityValue = data.intensity;
+                } else if (data.awakenedEngine && data.awakenedEngine.progression) {
+                    const prog = data.awakenedEngine.progression;
+                    if (prog === "dormant") intensityValue = 0.15;
+                    else if (prog === "stirring") intensityValue = 0.25;
+                    else if (prog === "awakening") intensityValue = 0.45;
+                    else if (prog === "awakened") intensityValue = 0.70;
+                    else if (prog === "ascended") intensityValue = 0.90;
+                    else if (prog === "base") intensityValue = 0.35;
+                    else intensityValue = 0.35;
+                }
+                
+                if (intensityValue !== null) {
+                    updateFetchStatus(true, intensityValue);
+                    updateIntensityUI(intensityValue, true);
+                    statusDiv.innerHTML = `INTENSITY FETCH OK: ${(intensityValue * 100).toFixed(0)}% <span class="cursor"></span>`;
+                } else {
+                    updateFetchStatus(false);
+                    statusDiv.innerHTML = `INTENSITY FETCH: could not parse value <span class="cursor"></span>`;
+                }
+            } catch(e) {
+                console.error("Test fetch failed:", e);
+                updateFetchStatus(false);
+                statusDiv.innerHTML = `INTENSITY FETCH FAILED: ${e.message} <span class="cursor"></span>`;
+            }
+        }
+        
+        // FREEZE MODE - Canonical only
         function renderCanonicalMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value.trim() || '1';
@@ -475,7 +529,7 @@
             }
         }
         
-        // LIVE MODE - Shows raw fetched intensity from API
+        // LIVE MODE - Shows raw fetched intensity
         function startLiveMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value.trim() || '1';
@@ -497,10 +551,10 @@
                 currentSession = session;
                 session.startAnimation(canvas);
                 
-                // Show RAW FETCHED intensity, not the blended canonical value
+                // Show RAW FETCHED intensity using getRawTargetIntensity
                 intensityUpdateInterval = setInterval(() => {
                     if (currentSession) {
-                        // Use the raw target intensity (fetched from API)
+                        // Use raw target intensity (fetched from API, not blended)
                         let rawIntensity = null;
                         if (currentSession.getRawTargetIntensity) {
                             rawIntensity = currentSession.getRawTargetIntensity();
@@ -586,6 +640,7 @@
         renderBtn.onclick = () => { if (isFrozen) renderCanonicalMode(); else startLiveMode(); };
         randomBtn.onclick = randomToken;
         freezeBtn.onclick = toggleFreeze;
+        testIntensityBtn.onclick = testIntensityFetch;
         
         function waitForEngine() {
             if (typeof DartHLGEN !== 'undefined') {
@@ -602,9 +657,10 @@
             if (e.key === 'ArrowRight') randomToken();
             if (e.key === 'r' || e.key === 'R') { if (isFrozen) renderCanonicalMode(); else startLiveMode(); }
             if (e.key === 'f' || e.key === 'F') toggleFreeze();
+            if (e.key === 't' || e.key === 'T') testIntensityFetch();
         });
         
-        console.log("Terminal Viewer Ready — Showing raw fetched intensity");
+        console.log("Terminal Viewer Ready — Engine v1.8.2 compatible");
     </script>
 </body>
 </html>
