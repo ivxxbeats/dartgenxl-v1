@@ -1,118 +1,353 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dart HLGEN - Generative Art Engine</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Dart HLGEN - The Art of Farcaster</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             background: #0a0a0f;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(233, 69, 96, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            font-family: monospace;
-            margin: 0;
+            font-family: 'Courier New', 'Fira Code', monospace;
             padding: 20px;
         }
+        
         .container {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(233, 69, 96, 0.2);
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            height: auto;
+            max-width: 640px;
+        }
+        
+        canvas:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Controls container - positioned BELOW canvas, never overlapping */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 10px 0;
+        }
+        
+        /* Info panel - positioned BELOW canvas, never overlapping */
+        .info-panel {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            padding: 15px 20px;
+            border-left: 3px solid #e94560;
+        }
+        
+        .traits {
+            color: #e94560;
+            font-size: 11px;
+            line-height: 1.6;
+            word-break: break-word;
+            font-family: monospace;
             text-align: center;
         }
-        canvas {
-            border: 2px solid #e94560;
-            box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
-        }
-        .info {
-            margin-top: 20px;
+        
+        .traits span {
             color: #00ffff;
-            font-size: 12px;
-            background: rgba(0,0,0,0.8);
-            padding: 15px;
-            border-radius: 8px;
         }
-        .controls {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
+        
         input, button {
             background: #1a1a2e;
             color: #e94560;
             border: 1px solid #e94560;
             padding: 8px 16px;
             font-family: monospace;
-        }
-        button {
+            border-radius: 6px;
+            font-size: 12px;
             cursor: pointer;
+            transition: all 0.2s;
         }
-        button:hover {
+        
+        input {
+            background: #0a0a0f;
+            cursor: text;
+        }
+        
+        input:hover, button:hover {
             background: #e94560;
             color: #1a1a2e;
+            border-color: #e94560;
+        }
+        
+        .status {
+            margin-top: 12px;
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        /* Freeze button special styling */
+        #freezeBtn {
+            background: #2a1a2e;
+            border-color: #ff6680;
+        }
+        
+        #freezeBtn.active {
+            background: #e94560;
+            color: #1a1a2e;
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 15px;
+            }
+            .traits {
+                font-size: 9px;
+            }
+            input, button {
+                padding: 6px 12px;
+                font-size: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Canvas only - no UI overlays on canvas -->
         <canvas id="artCanvas" width="640" height="640"></canvas>
-        <div class="info" id="info">Loading...</div>
+        
+        <!-- All UI elements are BELOW the canvas -->
+        <div class="info-panel">
+            <div class="traits" id="info">Loading engine...</div>
+        </div>
+        
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="Token ID" value="1">
             <input type="text" id="hashInput" placeholder="Tx Hash" value="0xabc123">
-            <button id="renderBtn">Render</button>
+            <button id="renderBtn">🔄 Render</button>
+            <button id="randomBtn">🎲 Random</button>
+            <button id="freezeBtn" class="active">❄️ Freeze Mode</button>
         </div>
+        
+        <div class="status" id="status">The Art of Farcaster</div>
     </div>
     
-    <!-- Using engine.js - keep this name -->
     <script src="engine.js"></script>
-    
     <script>
-        console.log("Page loaded");
-        console.log("Looking for DartHLGEN in engine.js...");
+        console.log("Page loaded - Art of Farcaster | No UI over canvas");
         
         const canvas = document.getElementById('artCanvas');
         const infoDiv = document.getElementById('info');
+        const statusDiv = document.getElementById('status');
         const tokenInput = document.getElementById('tokenInput');
         const hashInput = document.getElementById('hashInput');
         const renderBtn = document.getElementById('renderBtn');
+        const randomBtn = document.getElementById('randomBtn');
+        const freezeBtn = document.getElementById('freezeBtn');
         
-        function render() {
-            const tokenId = tokenInput.value;
-            const txHash = hashInput.value;
-            
-            if (!window.DartHLGEN) {
-                infoDiv.innerHTML = "❌ Engine not loaded. Check console for errors in engine.js";
-                console.error("DartHLGEN not found - engine.js may have errors");
-                return;
+        let currentSession = null;
+        let isFrozen = false;
+        
+        function stopCurrentSession() {
+            if (currentSession && currentSession.stop) {
+                currentSession.stop();
+                currentSession = null;
             }
-            
-            const result = window.DartHLGEN.renderCanonical(tokenId, txHash);
-            window.DartHLGEN.drawToCanvas(canvas, result);
-            
-            const t = result.traits;
-            infoDiv.innerHTML = 
-                `🎨 ${t.engineType || '?'} · ${t.rarityClass || '?'}<br>` +
-                `📐 ${t.archetype || '?'} · ${t.anchorForm || '?'}<br>` +
-                `⚡ ${t.primaryDriver || '?'} · ${t.failureMode || '?'}<br>` +
-                `${t.anomalyClass ? '🌀 ' + t.anomalyClass : '✨ No Anomaly'} · ES: ${result.eventScore || 0}`;
         }
         
-        // Wait for engine to load
-        let attempts = 0;
-        function checkEngine() {
-            attempts++;
-            if (window.DartHLGEN) {
-                console.log("✅ Engine loaded successfully");
-                render();
-            } else if (attempts < 50) {
-                console.log(`⏳ Waiting for engine... (attempt ${attempts})`);
-                setTimeout(checkEngine, 100);
+        // Update freeze button appearance
+        function updateFreezeButton() {
+            if (isFrozen) {
+                freezeBtn.classList.add('active');
+                freezeBtn.textContent = '❄️ Freeze Mode (ON)';
+                statusDiv.innerHTML = '❄️ Frozen mode - Static canonical art';
             } else {
-                console.error("❌ Engine failed to load after 5 seconds");
-                infoDiv.innerHTML = "❌ Failed to load engine.js - check file exists and has no syntax errors";
+                freezeBtn.classList.remove('active');
+                freezeBtn.textContent = '❄️ Freeze Mode';
+                statusDiv.innerHTML = '🎬 Live mode - Animated with intensity';
             }
         }
         
+        // Render canonical (freeze mode)
+        function renderCanonicalMode() {
+            stopCurrentSession();
+            const tokenId = tokenInput.value;
+            const txHash = hashInput.value || '0xfallback';
+            
+            try {
+                const result = DartHLGEN.renderCanonical(tokenId, txHash);
+                DartHLGEN.drawToCanvas(canvas, result);
+                
+                const t = result.traits;
+                infoDiv.innerHTML = 
+                    `<span>🎨 ${t.engineType}</span> · <span>${t.rarityClass}</span><br>` +
+                    `<span>📐 ${t.archetype}</span> · <span>${t.anchorForm}</span><br>` +
+                    `<span>⚡ ${t.primaryDriver}</span> · <span>${t.failureMode}</span><br>` +
+                    `${t.anomalyClass ? '<span>🌀 ' + t.anomalyClass + '</span>' : '<span>✨ No Anomaly</span>'} · ` +
+                    `<span>🎯 ES:${result.eventScore}</span><br>` +
+                    `<span>🔥 ${result.stabilityClass || '?'}</span> · ` +
+                    `<span>⚡ ${result.intensityBias || '?'}</span> · ` +
+                    `<span>🌀 ${result.activationType || '?'}</span>`;
+            } catch(e) {
+                console.error("Render error:", e);
+                infoDiv.innerHTML = `❌ Error: ${e.message}`;
+            }
+        }
+        
+        // Start live mode - NO UI OVER CANVAS, canonical drawn first by engine
+        function startLiveMode() {
+            stopCurrentSession();
+            const tokenId = tokenInput.value;
+            const txHash = hashInput.value || '0xfallback';
+            
+            try {
+                const session = DartHLGEN.createLiveSession(tokenId, txHash);
+                session.startAnimation(canvas);
+                currentSession = session;
+                
+                // Update info panel
+                const updateInfo = () => {
+                    if (currentSession) {
+                        const t = currentSession.getCanonical().traits;
+                        const canonical = currentSession.getCanonical();
+                        infoDiv.innerHTML = 
+                            `<span>🎨 ${t.engineType}</span> · <span>${t.rarityClass}</span><br>` +
+                            `<span>📐 ${t.archetype}</span> · <span>${t.anchorForm}</span><br>` +
+                            `<span>⚡ ${t.primaryDriver}</span> · <span>${t.failureMode}</span><br>` +
+                            `${t.anomalyClass ? '<span>🌀 ' + t.anomalyClass + '</span>' : '<span>✨ No Anomaly</span>'} · ` +
+                            `<span>🎯 ES:${canonical.eventScore || 0}</span><br>` +
+                            `<span>🔥 ${canonical.stabilityClass || '?'}</span> · ` +
+                            `<span>⚡ ${canonical.intensityBias || '?'}</span> · ` +
+                            `<span>🌀 ${canonical.activationType || '?'}</span>`;
+                    }
+                };
+                updateInfo();
+                setInterval(updateInfo, 1000);
+            } catch(e) {
+                console.error("Live mode error:", e);
+                infoDiv.innerHTML = `❌ Error: ${e.message}`;
+            }
+        }
+        
+        // Toggle between live and frozen
+        function toggleFreeze() {
+            isFrozen = !isFrozen;
+            updateFreezeButton();
+            
+            const tokenId = tokenInput.value;
+            const txHash = hashInput.value || '0xfallback';
+            
+            // Update URL
+            const url = new URL(window.location);
+            if (isFrozen) {
+                url.searchParams.set('freeze', 'true');
+                renderCanonicalMode();
+            } else {
+                url.searchParams.delete('freeze');
+                startLiveMode();
+            }
+            window.history.pushState({}, '', url);
+        }
+        
+        // Random token generator
+        function randomToken() {
+            const randomId = Math.floor(Math.random() * 10000);
+            const randomHash = '0x' + Math.random().toString(36).substring(2, 10);
+            tokenInput.value = randomId;
+            hashInput.value = randomHash;
+            
+            // Update URL without reload
+            const url = new URL(window.location);
+            url.searchParams.set('tid', randomId);
+            url.searchParams.set('h', randomHash);
+            window.history.pushState({}, '', url);
+            
+            // Restart current mode
+            if (isFrozen) {
+                renderCanonicalMode();
+            } else {
+                startLiveMode();
+            }
+        }
+        
+        // Check if engine loaded
+        function checkEngine() {
+            if (typeof DartHLGEN !== 'undefined') {
+                console.log("Engine loaded v" + DartHLGEN.version);
+                
+                // Get URL params
+                const params = new URLSearchParams(window.location.search);
+                const tid = params.get('tid') || params.get('tokenId');
+                const h = params.get('h') || params.get('txHash');
+                const freezeParam = params.get('freeze') === 'true';
+                
+                if (tid) tokenInput.value = tid;
+                if (h) hashInput.value = h;
+                
+                // Set initial mode
+                isFrozen = freezeParam;
+                updateFreezeButton();
+                
+                if (isFrozen) {
+                    renderCanonicalMode();
+                } else {
+                    startLiveMode();
+                }
+            } else {
+                setTimeout(checkEngine, 100);
+            }
+        }
+        
+        // Button handlers
+        renderBtn.onclick = () => {
+            if (isFrozen) {
+                renderCanonicalMode();
+            } else {
+                startLiveMode();
+            }
+        };
+        randomBtn.onclick = randomToken;
+        freezeBtn.onclick = toggleFreeze;
+        
+        // Start
         checkEngine();
-        renderBtn.onclick = render;
+        
+        // Keyboard shortcuts (no UI interference)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') { randomToken(); }
+            if (e.key === 'r' || e.key === 'R') { 
+                if (isFrozen) renderCanonicalMode(); else startLiveMode();
+            }
+            if (e.key === 'f' || e.key === 'F') { toggleFreeze(); }
+        });
+        
+        console.log("Ready - All UI elements below canvas, no overlap");
     </script>
 </body>
 </html>
