@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>DART GENXL // THE ART OF FARCASTER</title>
     <style>
-        /* OLD SCHOOL TERMINAL AESTHETIC */
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,500;14..32,600&display=swap');
         
         * {
             margin: 0;
@@ -15,49 +14,572 @@
         }
         
         body {
-            background: radial-gradient(circle at center, #0a0f0a 0%, #050805 100%);
+            background: #0a0a0f;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            font-family: 'Inter', 'System-ui', -apple-system, monospace;
             padding: 20px;
-            position: relative;
-        }
-        
-        /* CRT SCANLINE EFFECT */
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0, 255, 0, 0.03) 0px,
-                rgba(0, 255, 0, 0.03) 2px,
-                transparent 2px,
-                transparent 4px
-            );
-            pointer-events: none;
-            z-index: 100;
-        }
-        
-        /* CRT FLICKER */
-        @keyframes flicker {
-            0% { opacity: 0.97; }
-            5% { opacity: 0.95; }
-            10% { opacity: 0.97; }
-            15% { opacity: 0.94; }
-            20% { opacity: 0.98; }
-            100% { opacity: 0.97; }
         }
         
         .container {
-            background: #0a100a;
-            border: 2px solid #2a5a2a;
-            border-radius: 8px;
-            padding: 16px;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.15), inset 0 0 20px rgba(0, 255, 0, 0.05);
-            animation: flicker
+            background: #111116;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            max-width: 720px;
+            width: 100%;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .title {
+            color: #e8e8f0;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        
+        .badge {
+            font-size: 10px;
+            color: #8888aa;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            height: auto;
+            max-width: 640px;
+            background: #000000;
+        }
+        
+        .intensity-section {
+            margin-top: 20px;
+            background: #0d0d12;
+            border-radius: 16px;
+            padding: 14px;
+        }
+        
+        .intensity-label {
+            color: #aaaacc;
+            font-size: 11px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .intensity-bar-container {
+            background: #1a1a22;
+            border-radius: 20px;
+            height: 6px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .intensity-bar-fill {
+            background: linear-gradient(90deg, #5a5aff, #aa88ff);
+            width: 0%;
+            height: 100%;
+            transition: width 0.1s linear;
+            border-radius: 20px;
+        }
+        
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: #0d0d12;
+            border-radius: 20px;
+            color: #8888aa;
+        }
+        
+        .mode-badge.live {
+            background: linear-gradient(135deg, #5a5aff20, #aa88ff20);
+            color: #aa88ff;
+        }
+        
+        .traits-panel {
+            margin-top: 16px;
+            background: #0d0d12;
+            border-radius: 16px;
+            padding: 14px;
+        }
+        
+        .traits-title {
+            color: #aaaacc;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .traits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 8px;
+        }
+        
+        .trait-item {
+            font-size: 10px;
+            color: #8888aa;
+            font-family: monospace;
+        }
+        
+        .trait-item span:first-child {
+            color: #666688;
+        }
+        
+        .trait-item span:last-child {
+            color: #e8e8f0;
+            font-weight: 500;
+        }
+        
+        .affects-panel {
+            margin-top: 16px;
+            background: #0d0d12;
+            border-radius: 16px;
+            padding: 14px;
+        }
+        
+        .affects-title {
+            color: #aaaacc;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .affects-text {
+            font-size: 9px;
+            color: #777799;
+            line-height: 1.6;
+        }
+        
+        .affects-highlight {
+            color: #aa88ff;
+        }
+        
+        .controls {
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        input, button {
+            background: #0d0d12;
+            color: #e8e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 14px;
+            font-family: 'Inter', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 40px;
+        }
+        
+        input {
+            background: #0a0a0f;
+        }
+        
+        input:hover, button:hover {
+            background: #1a1a24;
+            border-color: rgba(170, 136, 255, 0.5);
+        }
+        
+        #freezeBtn.active {
+            background: #1a1a24;
+            border-color: #aa88ff;
+            color: #aa88ff;
+        }
+        
+        .status {
+            margin-top: 14px;
+            font-size: 9px;
+            color: #666688;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 6px;
+            height: 10px;
+            background: #aa88ff;
+            vertical-align: middle;
+            animation: blink 1s step-end infinite;
+            margin-left: 4px;
+            border-radius: 1px;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        @media (max-width: 640px) {
+            .container { padding: 16px; }
+            .traits-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">DART GENXL</div>
+            <div class="badge">THE ART OF FARCASTER</div>
+        </div>
+        
+        <canvas id="artCanvas" width="640" height="640"></canvas>
+        
+        <div class="intensity-section">
+            <div class="intensity-label">
+                <span id="intensityLabel">LIVE INTENSITY</span>
+                <span id="intensityPercent">—</span>
+            </div>
+            <div class="intensity-bar-container">
+                <div class="intensity-bar-fill" id="intensityBar"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                <span class="mode-badge" id="modeBadge">STATIC</span>
+                <span style="font-size: 9px; color: #666688;">PHASE: <span id="pressureStage">—</span></span>
+            </div>
+        </div>
+        
+        <div class="traits-panel">
+            <div class="traits-title">TOKEN TRAITS</div>
+            <div class="traits-grid" id="traitsGrid">
+                <div class="trait-item"><span>ENGINE:</span> <span id="traitEngine">—</span></div>
+                <div class="trait-item"><span>VARIANT:</span> <span id="traitEngineVar">—</span></div>
+                <div class="trait-item"><span>RARITY:</span> <span id="traitRarity">—</span></div>
+                <div class="trait-item"><span>ARCHETYPE:</span> <span id="traitArchetype">—</span></div>
+                <div class="trait-item"><span>ANCHOR:</span> <span id="traitAnchor">—</span></div>
+                <div class="trait-item"><span>DRIVER:</span> <span id="traitDriver">—</span></div>
+                <div class="trait-item"><span>SPATIAL:</span> <span id="traitSpatial">—</span></div>
+                <div class="trait-item"><span>FAILURE:</span> <span id="traitFailure">—</span></div>
+                <div class="trait-item"><span>ANOMALY:</span> <span id="traitAnomaly">—</span></div>
+                <div class="trait-item"><span>MICRO:</span> <span id="traitMicro">—</span></div>
+                <div class="trait-item"><span>EVENT SCORE:</span> <span id="traitES">—</span></div>
+                <div class="trait-item"><span>CANONICAL INT:</span> <span id="traitCanonicalInt">—</span></div>
+            </div>
+        </div>
+        
+        <div class="affects-panel">
+            <div class="affects-title">INTENSITY PHASES</div>
+            <div class="affects-text">
+                <span class="affects-highlight">● 0-35%: STIRRING</span> — subtle motion<br>
+                <span class="affects-highlight">● 35-60%: AWAKENING</span> — increased contrast<br>
+                <span class="affects-highlight">● 60-82%: AWAKENED</span> — color boost, distortion<br>
+                <span class="affects-highlight">● 82-100%: ASCENDED</span> — reality shift
+            </div>
+        </div>
+        
+        <div class="controls">
+            <input type="text" id="tokenInput" placeholder="TOKEN ID" value="1">
+            <input type="text" id="hashInput" placeholder="TX HASH" value="0xabc123">
+            <button id="renderBtn">⟳ RENDER</button>
+            <button id="randomBtn">🎲 RANDOM</button>
+            <button id="freezeBtn">❄️ FREEZE</button>
+        </div>
+        
+        <div class="status" id="status">
+            SYSTEM READY <span class="cursor"></span>
+        </div>
+    </div>
+    
+    <script src="engine.js"></script>
+    <script>
+        // ============================================================
+        // TERMINAL VIEWER - FIXED: Live intensity vs Canonical intensity
+        // ============================================================
+        
+        const canvas = document.getElementById('artCanvas');
+        const tokenInput = document.getElementById('tokenInput');
+        const hashInput = document.getElementById('hashInput');
+        const renderBtn = document.getElementById('renderBtn');
+        const randomBtn = document.getElementById('randomBtn');
+        const freezeBtn = document.getElementById('freezeBtn');
+        const statusDiv = document.getElementById('status');
+        
+        // UI Elements
+        const intensityLabel = document.getElementById('intensityLabel');
+        const intensityBar = document.getElementById('intensityBar');
+        const intensityPercent = document.getElementById('intensityPercent');
+        const modeBadge = document.getElementById('modeBadge');
+        const pressureStageSpan = document.getElementById('pressureStage');
+        
+        // Trait elements
+        const traitEngine = document.getElementById('traitEngine');
+        const traitEngineVar = document.getElementById('traitEngineVar');
+        const traitRarity = document.getElementById('traitRarity');
+        const traitArchetype = document.getElementById('traitArchetype');
+        const traitAnchor = document.getElementById('traitAnchor');
+        const traitDriver = document.getElementById('traitDriver');
+        const traitSpatial = document.getElementById('traitSpatial');
+        const traitFailure = document.getElementById('traitFailure');
+        const traitAnomaly = document.getElementById('traitAnomaly');
+        const traitMicro = document.getElementById('traitMicro');
+        const traitES = document.getElementById('traitES');
+        const traitCanonicalInt = document.getElementById('traitCanonicalInt');
+        
+        let currentSession = null;
+        let isFrozen = false;
+        let intensityUpdateInterval = null;
+        let currentCanonicalResult = null;
+        
+        function updateIntensityUI(intensity, isLive = true) {
+            const percent = Math.floor(intensity * 100);
+            intensityBar.style.width = `${percent}%`;
+            intensityPercent.textContent = `${percent}%`;
+            
+            let phase = "";
+            let phaseText = "";
+            
+            if (intensity > 0.82) {
+                phase = "ASCENDED";
+                phaseText = "ASCENDED";
+            } else if (intensity > 0.60) {
+                phase = "AWAKENED";
+                phaseText = "AWAKENED";
+            } else if (intensity > 0.35) {
+                phase = "AWAKENING";
+                phaseText = "AWAKENING";
+            } else {
+                phase = "STIRRING";
+                phaseText = "STIRRING";
+            }
+            
+            pressureStageSpan.textContent = phaseText;
+            
+            if (isLive) {
+                modeBadge.textContent = phaseText;
+                modeBadge.classList.add('live');
+            }
+        }
+        
+        function updateModeUI(isLiveMode) {
+            if (isLiveMode) {
+                intensityLabel.textContent = 'LIVE INTENSITY';
+                modeBadge.textContent = 'LIVE';
+                modeBadge.classList.add('live');
+            } else {
+                intensityLabel.textContent = 'CANONICAL (STATIC)';
+                modeBadge.textContent = 'STATIC';
+                modeBadge.classList.remove('live');
+            }
+        }
+        
+        function updateTraitsUI(result) {
+            if (!result || !result.traits) return;
+            const t = result.traits;
+            traitEngine.textContent = t.engineType || '?';
+            traitEngineVar.textContent = t.engineVariant || '?';
+            traitRarity.textContent = t.rarityClass || '?';
+            traitArchetype.textContent = t.archetype || '?';
+            traitAnchor.textContent = t.anchorForm || '?';
+            traitDriver.textContent = t.primaryDriver || '?';
+            traitSpatial.textContent = t.spatialBehavior || '?';
+            traitFailure.textContent = t.failureMode || '?';
+            traitAnomaly.textContent = t.anomalyClass || 'None';
+            traitMicro.textContent = t.microEvent || 'None';
+            traitES.textContent = result.eventScore || '0';
+            traitCanonicalInt.textContent = result.canonicalIntensity ? result.canonicalIntensity.toFixed(3) : '—';
+        }
+        
+        function stopCurrentSession() {
+            if (intensityUpdateInterval) {
+                clearInterval(intensityUpdateInterval);
+                intensityUpdateInterval = null;
+            }
+            if (currentSession && currentSession.stop) {
+                currentSession.stop();
+                currentSession = null;
+            }
+        }
+        
+        function showLoading(message = 'RENDERING...') {
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#8888aa';
+            ctx.font = '11px "Inter", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(message, canvas.width/2, canvas.height/2);
+        }
+        
+        // FREEZE MODE - Canonical only, NO live intensity
+        function renderCanonicalMode() {
+            stopCurrentSession();
+            const tokenId = tokenInput.value.trim() || '1';
+            const txHash = hashInput.value.trim() || '0xfallback';
+            
+            statusDiv.innerHTML = `FREEZE MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
+            showLoading(`LOADING TOKEN ${tokenId}...`);
+            updateModeUI(false);  // STATIC mode
+            
+            try {
+                const result = DartHLGEN.renderCanonical(tokenId, txHash);
+                if (!result || !result.pixels) throw new Error("Invalid render");
+                
+                currentCanonicalResult = result;
+                DartHLGEN.drawToCanvas(canvas, result);
+                updateTraitsUI(result);
+                
+                // In freeze mode, show 0% intensity (canonical has no pressure)
+                updateIntensityUI(0, false);
+                
+                statusDiv.innerHTML = `FREEZE MODE — ${result.traits.engineType} · ${result.traits.rarityClass} <span class="cursor"></span>`;
+            } catch(e) {
+                console.error("Render error:", e);
+                showLoading('RENDER FAILED');
+                statusDiv.innerHTML = `ERROR: ${e.message.substring(0, 40)} <span class="cursor"></span>`;
+            }
+        }
+        
+        // LIVE MODE - Shows fetched intensity from API
+        function startLiveMode() {
+            stopCurrentSession();
+            const tokenId = tokenInput.value.trim() || '1';
+            const txHash = hashInput.value.trim() || '0xfallback';
+            
+            statusDiv.innerHTML = `LIVE MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
+            showLoading(`BOOTING LIVE ENGINE...`);
+            updateModeUI(true);  // LIVE mode
+            
+            try {
+                // First render canonical as base
+                const canonicalResult = DartHLGEN.renderCanonical(tokenId, txHash);
+                currentCanonicalResult = canonicalResult;
+                DartHLGEN.drawToCanvas(canvas, canonicalResult);
+                updateTraitsUI(canonicalResult);
+                
+                // Start live session
+                const session = DartHLGEN.createLiveSession(tokenId, txHash);
+                currentSession = session;
+                session.startAnimation(canvas);
+                
+                // Update intensity UI from live session (fetched API value)
+                intensityUpdateInterval = setInterval(() => {
+                    if (currentSession && currentSession.getLiveIntensity) {
+                        const intensity = currentSession.getLiveIntensity();
+                        if (intensity !== undefined) {
+                            updateIntensityUI(intensity, true);
+                        }
+                    }
+                }, 50);  // Faster updates for smoother bar animation
+                
+                statusDiv.innerHTML = `LIVE MODE — PRESSURE SENSITIVE · FETCHING INTENSITY <span class="cursor"></span>`;
+            } catch(e) {
+                console.error("Live mode error:", e);
+                showLoading('LIVE MODE FAILED');
+                statusDiv.innerHTML = `ERROR: ${e.message.substring(0, 40)} <span class="cursor"></span>`;
+                updateModeUI(false);
+            }
+        }
+        
+        function toggleFreeze() {
+            isFrozen = !isFrozen;
+            const url = new URL(window.location);
+            
+            if (isFrozen) {
+                url.searchParams.set('freeze', 'true');
+                freezeBtn.classList.add('active');
+                freezeBtn.textContent = '❄️ FREEZE (ON)';
+                renderCanonicalMode();
+            } else {
+                url.searchParams.delete('freeze');
+                freezeBtn.classList.remove('active');
+                freezeBtn.textContent = '❄️ FREEZE';
+                startLiveMode();
+            }
+            window.history.pushState({}, '', url);
+        }
+        
+        function randomToken() {
+            const randomId = Math.floor(Math.random() * 9999) + 1;
+            const randomHash = '0x' + Math.random().toString(36).substring(2, 10);
+            tokenInput.value = randomId;
+            hashInput.value = randomHash;
+            
+            const url = new URL(window.location);
+            url.searchParams.set('tid', randomId);
+            url.searchParams.set('h', randomHash);
+            window.history.pushState({}, '', url);
+            
+            statusDiv.innerHTML = `RANDOM TOKEN — ID ${randomId} <span class="cursor"></span>`;
+            
+            if (isFrozen) {
+                renderCanonicalMode();
+            } else {
+                startLiveMode();
+            }
+        }
+        
+        function init() {
+            const params = new URLSearchParams(window.location.search);
+            const tid = params.get('tid') || params.get('tokenId');
+            const h = params.get('h') || params.get('txHash');
+            const freezeParam = params.get('freeze') === 'true';
+            
+            if (tid) tokenInput.value = tid;
+            if (h) hashInput.value = h;
+            
+            isFrozen = freezeParam;
+            
+            if (isFrozen) {
+                freezeBtn.classList.add('active');
+                freezeBtn.textContent = '❄️ FREEZE (ON)';
+                renderCanonicalMode();
+            } else {
+                freezeBtn.classList.remove('active');
+                freezeBtn.textContent = '❄️ FREEZE';
+                startLiveMode();
+            }
+        }
+        
+        renderBtn.onclick = () => { if (isFrozen) renderCanonicalMode(); else startLiveMode(); };
+        randomBtn.onclick = randomToken;
+        freezeBtn.onclick = toggleFreeze;
+        
+        function waitForEngine() {
+            if (typeof DartHLGEN !== 'undefined') {
+                console.log("Engine loaded v" + DartHLGEN.version);
+                init();
+            } else {
+                setTimeout(waitForEngine, 100);
+            }
+        }
+        
+        waitForEngine();
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') randomToken();
+            if (e.key === 'r' || e.key === 'R') { if (isFrozen) renderCanonicalMode(); else startLiveMode(); }
+            if (e.key === 'f' || e.key === 'F') toggleFreeze();
+        });
+        
+        console.log("Terminal Viewer Ready — Live intensity / Canonical intensity separated");
+    </script>
+</body>
+</html>
