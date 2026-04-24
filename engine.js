@@ -770,7 +770,8 @@
         const canonical = renderCanonical(tokenId, txHash);
         
         let currentLiveIntensity = canonical.canonicalIntensity;
-        let currentLiveTime = 0;
+        let targetLiveIntensity = canonical.canonicalIntensity;
+        let currentLiveTime = canonical.canonicalTime;
         let animationId = null;
         let canvasElement = null;
         
@@ -922,7 +923,7 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data && typeof data.intensity === 'number') {
-                        currentLiveIntensity = Math.max(0.05, Math.min(0.95, data.intensity));
+                        targetLiveIntensity = Math.max(0.05, Math.min(0.95, data.intensity));
                     }
                 })
                 .catch(() => console.warn("Intensity fetch failed"));
@@ -935,7 +936,7 @@
             function animate(timestamp) {
                 if (!startTime) startTime = timestamp;
                 const elapsed = (timestamp - startTime) / 1000;
-                currentLiveTime = elapsed % (Math.PI * 2);
+                currentLiveTime = canonical.canonicalTime + elapsed * 0.35;
                 renderFrame();
                 animationId = requestAnimationFrame(animate);
             }
