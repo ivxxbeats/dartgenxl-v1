@@ -48,32 +48,11 @@
             background: #e94560;
             color: #1a1a2e;
         }
-.awakening-badge {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: rgba(0,0,0,0.8);
-    color: #e94560;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-family: monospace;
-    font-weight: bold;
-    pointer-events: none;
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border: 1px solid rgba(233,69,96,0.3);
-}
-.awakening-badge.active { opacity: 1; }
-canvas { transition: filter 0.3s ease; }
-
     </style>
 </head>
 <body>
     <div class="container">
-        <canvas id="artCanvas" width="640" height="640">
-<div class="awakening-badge" id="awakeningBadge">AWAKENED</div></canvas>
+        <canvas id="artCanvas" width="640" height="640"></canvas>
         <div class="info" id="info">Loading...</div>
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="Token ID" value="1">
@@ -85,36 +64,7 @@ canvas { transition: filter 0.3s ease; }
     <!-- Using engine.js - keep this name -->
     <script src="engine.js"></script>
     
-                    // Show token changed notification
-                let lastTokenId = null;
-                function showTokenChange(newTokenId) {
-                    if (lastTokenId !== newTokenId) {
-                        lastTokenId = newTokenId;
-                        const notification = document.createElement('div');
-                        notification.textContent = `?? Token #${newTokenId}`;
-                        notification.style.cssText = `
-                            position: fixed;
-                            top: 20px;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            background: rgba(0,0,0,0.8);
-                            color: #e94560;
-                            padding: 8px 16px;
-                            border-radius: 20px;
-                            font-family: monospace;
-                            font-size: 12px;
-                            z-index: 1000;
-                            opacity: 1;
-                            transition: opacity 0.5s;
-                            pointer-events: none;
-                        `;
-                        document.body.appendChild(notification);
-                        setTimeout(() => {
-                            notification.style.opacity = '0';
-                            setTimeout(() => notification.remove(), 500);
-                        }, 2000);
-                    }
-                }
+    <script>
         console.log("Page loaded");
         console.log("Looking for DartHLGEN in engine.js...");
         
@@ -166,6 +116,3 @@ canvas { transition: filter 0.3s ease; }
     </script>
 </body>
 </html>
-
-
-
