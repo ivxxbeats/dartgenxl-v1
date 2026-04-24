@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Dart HLGEN - The Art of Farcaster</title>
+    <title>DART GENXL // THE ART OF FARCASTER</title>
     <style>
+        /* OLD SCHOOL TERMINAL AESTHETIC */
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -12,283 +15,543 @@
         }
         
         body {
-            background: #0a0a0f;
-            background-image: 
-                radial-gradient(circle at 25% 25%, rgba(233, 69, 96, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+            background: radial-gradient(circle at center, #0a0f0a 0%, #050805 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Courier New', 'Fira Code', monospace;
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
             padding: 20px;
+            position: relative;
+        }
+        
+        /* CRT SCANLINE EFFECT */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 0, 0.03) 0px,
+                rgba(0, 255, 0, 0.03) 2px,
+                transparent 2px,
+                transparent 4px
+            );
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        /* CRT FLICKER */
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            5% { opacity: 0.95; }
+            10% { opacity: 0.97; }
+            15% { opacity: 0.94; }
+            20% { opacity: 0.98; }
+            100% { opacity: 0.97; }
         }
         
         .container {
-            background: rgba(10, 10, 15, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(233, 69, 96, 0.2);
+            background: #0a100a;
+            border: 2px solid #2a5a2a;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.15), inset 0 0 20px rgba(0, 255, 0, 0.05);
+            animation: flicker 0.15s infinite;
+            position: relative;
+            max-width: 720px;
+            width: 100%;
         }
         
+        /* TERMINAL HEADER */
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #2a5a2a;
+        }
+        
+        .terminal-title {
+            color: #2a5a2a;
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
+        
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2a5a2a;
+        }
+        
+        /* CANVAS - NO UI OVERLAY */
         canvas {
             display: block;
             margin: 0 auto;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            cursor: pointer;
-            transition: transform 0.2s;
+            border: 1px solid #2a5a2a;
+            box-shadow: 0 0 0 1px #0a100a, 0 0 0 3px #1a3a1a;
             width: 100%;
             height: auto;
             max-width: 640px;
+            image-rendering: crisp-edges;
         }
         
-        canvas:hover {
-            transform: scale(1.02);
-        }
-        
-        /* Controls container - positioned BELOW canvas, never overlapping */
-        .controls {
+        /* INTENSITY BAR - TERMINAL STYLE */
+        .intensity-section {
             margin-top: 20px;
+            background: #050805;
+            border: 1px solid #1a3a1a;
+            padding: 12px;
+        }
+        
+        .intensity-label {
+            color: #2a5a2a;
+            font-size: 10px;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
             display: flex;
-            gap: 12px;
+            justify-content: space-between;
+        }
+        
+        .intensity-bar-container {
+            background: #0a100a;
+            border: 1px solid #2a5a2a;
+            height: 12px;
+            width: 100%;
+            position: relative;
+        }
+        
+        .intensity-bar-fill {
+            background: linear-gradient(90deg, #0a5a0a, #2aff2a);
+            width: 0%;
+            height: 100%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 4px #2aff2a;
+        }
+        
+        /* AWAKE STATE BADGE */
+        .awake-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 9px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background: #0a100a;
+            border: 1px solid #2a5a2a;
+            color: #2a5a2a;
+        }
+        
+        .awake-badge.active {
+            border-color: #2aff2a;
+            color: #2aff2a;
+            box-shadow: 0 0 6px #2aff2a;
+            text-shadow: 0 0 2px #2aff2a;
+        }
+        
+        /* TRAITS PANEL */
+        .traits-panel {
+            margin-top: 15px;
+            background: #050805;
+            border: 1px solid #1a3a1a;
+            padding: 12px;
+        }
+        
+        .traits-title {
+            color: #2a5a2a;
+            font-size: 9px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #1a3a1a;
+            padding-bottom: 4px;
+        }
+        
+        .traits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 6px;
+        }
+        
+        .trait-item {
+            font-size: 9px;
+            color: #5a8a5a;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        .trait-item span:first-child {
+            color: #2a5a2a;
+        }
+        
+        .trait-item span:last-child {
+            color: #2aff2a;
+        }
+        
+        /* AFFECTS PANEL - how intensity affects the piece */
+        .affects-panel {
+            margin-top: 15px;
+            background: #050805;
+            border: 1px solid #1a3a1a;
+            padding: 12px;
+        }
+        
+        .affects-title {
+            color: #2a5a2a;
+            font-size: 9px;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        
+        .affects-text {
+            font-size: 8px;
+            color: #5a8a5a;
+            line-height: 1.5;
+        }
+        
+        .affects-highlight {
+            color: #2aff2a;
+        }
+        
+        /* CONTROLS - TERMINAL STYLE */
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 8px;
             justify-content: center;
             flex-wrap: wrap;
-            padding: 10px 0;
-        }
-        
-        /* Info panel - positioned BELOW canvas, never overlapping */
-        .info-panel {
-            margin-top: 20px;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 12px;
-            padding: 15px 20px;
-            border-left: 3px solid #e94560;
-        }
-        
-        .traits {
-            color: #e94560;
-            font-size: 11px;
-            line-height: 1.6;
-            word-break: break-word;
-            font-family: monospace;
-            text-align: center;
-        }
-        
-        .traits span {
-            color: #00ffff;
         }
         
         input, button {
-            background: #1a1a2e;
-            color: #e94560;
-            border: 1px solid #e94560;
-            padding: 8px 16px;
-            font-family: monospace;
-            border-radius: 6px;
-            font-size: 12px;
+            background: #0a100a;
+            color: #2aff2a;
+            border: 1px solid #2a5a2a;
+            padding: 6px 12px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
             cursor: pointer;
             transition: all 0.2s;
         }
         
         input {
-            background: #0a0a0f;
-            cursor: text;
+            background: #050805;
         }
         
         input:hover, button:hover {
-            background: #e94560;
-            color: #1a1a2e;
-            border-color: #e94560;
+            background: #1a3a1a;
+            border-color: #2aff2a;
+            box-shadow: 0 0 4px #2aff2a;
+        }
+        
+        #freezeBtn.active {
+            background: #1a3a1a;
+            border-color: #2aff2a;
+            box-shadow: 0 0 6px #2aff2a;
         }
         
         .status {
             margin-top: 12px;
-            font-size: 10px;
-            color: #666;
+            font-size: 8px;
+            color: #2a5a2a;
             text-align: center;
             letter-spacing: 1px;
         }
         
-        /* Freeze button special styling */
-        #freezeBtn {
-            background: #2a1a2e;
-            border-color: #ff6680;
+        /* BLINKING CURSOR */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 12px;
+            background: #2aff2a;
+            vertical-align: middle;
+            animation: blink 1s step-end infinite;
+            margin-left: 4px;
         }
         
-        #freezeBtn.active {
-            background: #e94560;
-            color: #1a1a2e;
-            box-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
         }
         
         @media (max-width: 640px) {
-            .container {
-                padding: 15px;
-            }
-            .traits {
-                font-size: 9px;
-            }
-            input, button {
-                padding: 6px 12px;
-                font-size: 10px;
-            }
+            .container { padding: 12px; }
+            .traits-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Canvas only - no UI overlays on canvas -->
+        <!-- TERMINAL HEADER -->
+        <div class="terminal-header">
+            <div class="terminal-title">DART_GENXL // THE ART OF FARCASTER</div>
+            <div class="terminal-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+        
+        <!-- CANVAS - PURE ART, NO OVERLAYS -->
         <canvas id="artCanvas" width="640" height="640"></canvas>
         
-        <!-- All UI elements are BELOW the canvas -->
-        <div class="info-panel">
-            <div class="traits" id="info">Loading engine...</div>
+        <!-- INTENSITY BAR SECTION -->
+        <div class="intensity-section">
+            <div class="intensity-label">
+                <span>LIVE_INTENSITY</span>
+                <span id="intensityPercent">0%</span>
+            </div>
+            <div class="intensity-bar-container">
+                <div class="intensity-bar-fill" id="intensityBar"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+                <span class="awake-badge" id="awakeBadge">SLEEPING</span>
+                <span style="font-size: 8px; color: #2a5a2a;">PRESSURE: <span id="pressureStage">0</span></span>
+            </div>
         </div>
         
+        <!-- TRAITS PANEL -->
+        <div class="traits-panel">
+            <div class="traits-title">╔══ TOKEN TRAITS ══╗</div>
+            <div class="traits-grid" id="traitsGrid">
+                <div class="trait-item"><span>ENGINE:</span> <span id="traitEngine">—</span></div>
+                <div class="trait-item"><span>RARITY:</span> <span id="traitRarity">—</span></div>
+                <div class="trait-item"><span>ARCHETYPE:</span> <span id="traitArchetype">—</span></div>
+                <div class="trait-item"><span>ANCHOR:</span> <span id="traitAnchor">—</span></div>
+                <div class="trait-item"><span>DRIVER:</span> <span id="traitDriver">—</span></div>
+                <div class="trait-item"><span>FAILURE:</span> <span id="traitFailure">—</span></div>
+                <div class="trait-item"><span>ANOMALY:</span> <span id="traitAnomaly">—</span></div>
+                <div class="trait-item"><span>EVENT SCORE:</span> <span id="traitES">—</span></div>
+            </div>
+        </div>
+        
+        <!-- HOW INTENSITY AFFECTS THE PIECE -->
+        <div class="affects-panel">
+            <div class="affects-title">╔══ INTENSITY AFFECTS ══╗</div>
+            <div class="affects-text">
+                <span class="affects-highlight">▸ 0-35%: STIRRING</span> — subtle breathing, calm motion<br>
+                <span class="affects-highlight">▸ 35-60%: AWAKENING</span> — increased contrast, faster waves<br>
+                <span class="affects-highlight">▸ 60-82%: AWAKENED</span> — color boost, stronger distortions<br>
+                <span class="affects-highlight">▸ 82-100%: ASCENDED</span> — physics break, reality shift<br>
+                <span class="affects-highlight">⚡ PRESSURE</span> multiplies all engine behaviors (Echo trails, Rupture spikes, Canonical breath)
+            </div>
+        </div>
+        
+        <!-- CONTROLS - BELOW CANVAS -->
         <div class="controls">
-            <input type="text" id="tokenInput" placeholder="Token ID" value="1">
-            <input type="text" id="hashInput" placeholder="Tx Hash" value="0xabc123">
-            <button id="renderBtn">🔄 Render</button>
-            <button id="randomBtn">🎲 Random</button>
-            <button id="freezeBtn" class="active">❄️ Freeze Mode</button>
+            <input type="text" id="tokenInput" placeholder="TOKEN_ID" value="1">
+            <input type="text" id="hashInput" placeholder="TX_HASH" value="0xabc123">
+            <button id="renderBtn">🔄 RENDER</button>
+            <button id="randomBtn">🎲 RANDOM</button>
+            <button id="freezeBtn">❄️ FREEZE</button>
         </div>
         
-        <div class="status" id="status">The Art of Farcaster</div>
+        <div class="status" id="status">
+            SYSTEM_READY <span class="cursor"></span>
+        </div>
     </div>
     
     <script src="engine.js"></script>
     <script>
-        console.log("Page loaded - Art of Farcaster | No UI over canvas");
+        // ============================================================
+        // TERMINAL VIEWER - THE ART OF FARCASTER
+        // No UI over canvas, all controls below
+        // ============================================================
         
         const canvas = document.getElementById('artCanvas');
-        const infoDiv = document.getElementById('info');
-        const statusDiv = document.getElementById('status');
         const tokenInput = document.getElementById('tokenInput');
         const hashInput = document.getElementById('hashInput');
         const renderBtn = document.getElementById('renderBtn');
         const randomBtn = document.getElementById('randomBtn');
         const freezeBtn = document.getElementById('freezeBtn');
+        const statusDiv = document.getElementById('status');
+        
+        // UI Elements
+        const intensityBar = document.getElementById('intensityBar');
+        const intensityPercent = document.getElementById('intensityPercent');
+        const awakeBadge = document.getElementById('awakeBadge');
+        const pressureStageSpan = document.getElementById('pressureStage');
+        
+        // Trait elements
+        const traitEngine = document.getElementById('traitEngine');
+        const traitRarity = document.getElementById('traitRarity');
+        const traitArchetype = document.getElementById('traitArchetype');
+        const traitAnchor = document.getElementById('traitAnchor');
+        const traitDriver = document.getElementById('traitDriver');
+        const traitFailure = document.getElementById('traitFailure');
+        const traitAnomaly = document.getElementById('traitAnomaly');
+        const traitES = document.getElementById('traitES');
         
         let currentSession = null;
         let isFrozen = false;
+        let intensityUpdateInterval = null;
+        
+        // Update intensity UI
+        function updateIntensityUI(intensity) {
+            const percent = Math.floor(intensity * 100);
+            intensityBar.style.width = `${percent}%`;
+            intensityPercent.textContent = `${percent}%`;
+            
+            let pressureStage = "";
+            let badgeText = "";
+            let badgeClass = "";
+            
+            if (intensity > 0.82) {
+                pressureStage = "ASCENDED";
+                badgeText = "ASCENDED";
+                badgeClass = "active";
+            } else if (intensity > 0.60) {
+                pressureStage = "AWAKENED";
+                badgeText = "AWAKENED";
+                badgeClass = "active";
+            } else if (intensity > 0.35) {
+                pressureStage = "STIRRING";
+                badgeText = "STIRRING";
+                badgeClass = "";
+            } else {
+                pressureStage = "DORMANT";
+                badgeText = "DORMANT";
+                badgeClass = "";
+            }
+            
+            pressureStageSpan.textContent = pressureStage;
+            awakeBadge.textContent = badgeText;
+            if (badgeClass) {
+                awakeBadge.classList.add('active');
+            } else {
+                awakeBadge.classList.remove('active');
+            }
+        }
+        
+        // Update traits UI
+        function updateTraitsUI(traits, eventScore, stabilityClass, intensityBias, activationType) {
+            traitEngine.textContent = traits.engineType || '?';
+            traitRarity.textContent = traits.rarityClass || '?';
+            traitArchetype.textContent = traits.archetype || '?';
+            traitAnchor.textContent = traits.anchorForm || '?';
+            traitDriver.textContent = traits.primaryDriver || '?';
+            traitFailure.textContent = traits.failureMode || '?';
+            traitAnomaly.textContent = traits.anomalyClass || 'None';
+            traitES.textContent = eventScore || '0';
+        }
         
         function stopCurrentSession() {
+            if (intensityUpdateInterval) {
+                clearInterval(intensityUpdateInterval);
+                intensityUpdateInterval = null;
+            }
             if (currentSession && currentSession.stop) {
+                if (currentSession._infoInterval) clearInterval(currentSession._infoInterval);
                 currentSession.stop();
                 currentSession = null;
             }
         }
         
-        // Update freeze button appearance
-        function updateFreezeButton() {
-            if (isFrozen) {
-                freezeBtn.classList.add('active');
-                freezeBtn.textContent = '❄️ Freeze Mode (ON)';
-                statusDiv.innerHTML = '❄️ Frozen mode - Static canonical art';
-            } else {
-                freezeBtn.classList.remove('active');
-                freezeBtn.textContent = '❄️ Freeze Mode';
-                statusDiv.innerHTML = '🎬 Live mode - Animated with intensity';
-            }
+        function showLoading(message = 'RENDERING...') {
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#0a100a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#2aff2a';
+            ctx.font = '10px "Share Tech Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(message, canvas.width/2, canvas.height/2);
+            ctx.fillStyle = '#2a5a2a';
+            ctx.fillText('>_', canvas.width/2 - 40, canvas.height/2);
         }
         
-        // Render canonical (freeze mode)
         function renderCanonicalMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value;
             const txHash = hashInput.value || '0xfallback';
             
+            statusDiv.innerHTML = `FREEZE_MODE :: TOKEN_${tokenId} <span class="cursor"></span>`;
+            showLoading(`LOADING_TOKEN_${tokenId}...`);
+            
             try {
                 const result = DartHLGEN.renderCanonical(tokenId, txHash);
+                if (!result || !result.pixels) throw new Error("Invalid render");
                 DartHLGEN.drawToCanvas(canvas, result);
                 
-                const t = result.traits;
-                infoDiv.innerHTML = 
-                    `<span>🎨 ${t.engineType}</span> · <span>${t.rarityClass}</span><br>` +
-                    `<span>📐 ${t.archetype}</span> · <span>${t.anchorForm}</span><br>` +
-                    `<span>⚡ ${t.primaryDriver}</span> · <span>${t.failureMode}</span><br>` +
-                    `${t.anomalyClass ? '<span>🌀 ' + t.anomalyClass + '</span>' : '<span>✨ No Anomaly</span>'} · ` +
-                    `<span>🎯 ES:${result.eventScore}</span><br>` +
-                    `<span>🔥 ${result.stabilityClass || '?'}</span> · ` +
-                    `<span>⚡ ${result.intensityBias || '?'}</span> · ` +
-                    `<span>🌀 ${result.activationType || '?'}</span>`;
+                updateTraitsUI(result.traits, result.eventScore, result.stabilityClass, result.intensityBias, result.activationType);
+                
+                // In freeze mode, intensity is 0
+                updateIntensityUI(0);
             } catch(e) {
                 console.error("Render error:", e);
-                infoDiv.innerHTML = `❌ Error: ${e.message}`;
+                showLoading('RENDER_FAILED');
+                statusDiv.innerHTML = `ERROR: ${e.message.substring(0, 40)} <span class="cursor"></span>`;
             }
         }
         
-        // Start live mode - NO UI OVER CANVAS, canonical drawn first by engine
         function startLiveMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value;
             const txHash = hashInput.value || '0xfallback';
+            
+            statusDiv.innerHTML = `LIVE_MODE :: TOKEN_${tokenId} <span class="cursor"></span>`;
+            showLoading('BOOTING_LIVE_ENGINE...');
             
             try {
                 const session = DartHLGEN.createLiveSession(tokenId, txHash);
                 session.startAnimation(canvas);
                 currentSession = session;
                 
-                // Update info panel
-                const updateInfo = () => {
+                // Update intensity UI from live session
+                intensityUpdateInterval = setInterval(() => {
                     if (currentSession) {
-                        const t = currentSession.getCanonical().traits;
+                        const intensity = currentSession.getLiveIntensity();
+                        if (intensity !== undefined) updateIntensityUI(intensity);
+                        
                         const canonical = currentSession.getCanonical();
-                        infoDiv.innerHTML = 
-                            `<span>🎨 ${t.engineType}</span> · <span>${t.rarityClass}</span><br>` +
-                            `<span>📐 ${t.archetype}</span> · <span>${t.anchorForm}</span><br>` +
-                            `<span>⚡ ${t.primaryDriver}</span> · <span>${t.failureMode}</span><br>` +
-                            `${t.anomalyClass ? '<span>🌀 ' + t.anomalyClass + '</span>' : '<span>✨ No Anomaly</span>'} · ` +
-                            `<span>🎯 ES:${canonical.eventScore || 0}</span><br>` +
-                            `<span>🔥 ${canonical.stabilityClass || '?'}</span> · ` +
-                            `<span>⚡ ${canonical.intensityBias || '?'}</span> · ` +
-                            `<span>🌀 ${canonical.activationType || '?'}</span>`;
+                        if (canonical && canonical.traits) {
+                            updateTraitsUI(canonical.traits, canonical.eventScore, canonical.stabilityClass, canonical.intensityBias, canonical.activationType);
+                        }
                     }
-                };
-                updateInfo();
-                setInterval(updateInfo, 1000);
+                }, 100);
+                
             } catch(e) {
                 console.error("Live mode error:", e);
-                infoDiv.innerHTML = `❌ Error: ${e.message}`;
+                showLoading('LIVE_MODE_FAILED');
+                statusDiv.innerHTML = `ERROR: ${e.message.substring(0, 40)} <span class="cursor"></span>`;
             }
         }
         
-        // Toggle between live and frozen
         function toggleFreeze() {
             isFrozen = !isFrozen;
-            updateFreezeButton();
-            
-            const tokenId = tokenInput.value;
-            const txHash = hashInput.value || '0xfallback';
-            
-            // Update URL
             const url = new URL(window.location);
             if (isFrozen) {
                 url.searchParams.set('freeze', 'true');
+                freezeBtn.classList.add('active');
+                freezeBtn.textContent = '❄️ FREEZE (ON)';
                 renderCanonicalMode();
             } else {
                 url.searchParams.delete('freeze');
+                freezeBtn.classList.remove('active');
+                freezeBtn.textContent = '❄️ FREEZE';
                 startLiveMode();
             }
             window.history.pushState({}, '', url);
         }
         
-        // Random token generator
         function randomToken() {
             const randomId = Math.floor(Math.random() * 10000);
             const randomHash = '0x' + Math.random().toString(36).substring(2, 10);
             tokenInput.value = randomId;
             hashInput.value = randomHash;
             
-            // Update URL without reload
             const url = new URL(window.location);
             url.searchParams.set('tid', randomId);
             url.searchParams.set('h', randomHash);
             window.history.pushState({}, '', url);
             
-            // Restart current mode
+            statusDiv.innerHTML = `RANDOM_TOKEN :: ID_${randomId} <span class="cursor"></span>`;
+            
             if (isFrozen) {
                 renderCanonicalMode();
             } else {
@@ -296,12 +559,9 @@
             }
         }
         
-        // Check if engine loaded
         function checkEngine() {
             if (typeof DartHLGEN !== 'undefined') {
                 console.log("Engine loaded v" + DartHLGEN.version);
-                
-                // Get URL params
                 const params = new URLSearchParams(window.location.search);
                 const tid = params.get('tid') || params.get('tokenId');
                 const h = params.get('h') || params.get('txHash');
@@ -310,13 +570,14 @@
                 if (tid) tokenInput.value = tid;
                 if (h) hashInput.value = h;
                 
-                // Set initial mode
                 isFrozen = freezeParam;
-                updateFreezeButton();
-                
                 if (isFrozen) {
+                    freezeBtn.classList.add('active');
+                    freezeBtn.textContent = '❄️ FREEZE (ON)';
                     renderCanonicalMode();
                 } else {
+                    freezeBtn.classList.remove('active');
+                    freezeBtn.textContent = '❄️ FREEZE';
                     startLiveMode();
                 }
             } else {
@@ -324,30 +585,19 @@
             }
         }
         
-        // Button handlers
-        renderBtn.onclick = () => {
-            if (isFrozen) {
-                renderCanonicalMode();
-            } else {
-                startLiveMode();
-            }
-        };
+        renderBtn.onclick = () => { if (isFrozen) renderCanonicalMode(); else startLiveMode(); };
         randomBtn.onclick = randomToken;
         freezeBtn.onclick = toggleFreeze;
         
-        // Start
         checkEngine();
         
-        // Keyboard shortcuts (no UI interference)
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight') { randomToken(); }
-            if (e.key === 'r' || e.key === 'R') { 
-                if (isFrozen) renderCanonicalMode(); else startLiveMode();
-            }
-            if (e.key === 'f' || e.key === 'F') { toggleFreeze(); }
+            if (e.key === 'ArrowRight') randomToken();
+            if (e.key === 'r' || e.key === 'R') { if (isFrozen) renderCanonicalMode(); else startLiveMode(); }
+            if (e.key === 'f' || e.key === 'F') toggleFreeze();
         });
         
-        console.log("Ready - All UI elements below canvas, no overlap");
+        console.log("Terminal Viewer Ready - No UI Over Canvas");
     </script>
 </body>
 </html>
