@@ -1,7 +1,6 @@
 // ============================================================
-// DART HLGEN - UNIFIED ENGINE v1.5 - ELITE EDITION
-// Spatial Echo memory | Ascended breaks physics | Driver dominance
-// Rupture instability zones | Canonical transformation
+// DART HLGEN - UNIFIED ENGINE v1.6
+// NO FLASH: Canonical first, pressure ramps in with fade
 // ============================================================
 
 (function() {
@@ -40,7 +39,7 @@
     
     const LOG2 = Math.log(2);
     
-    // Echo spatial memory buffer (still global but directionally biased)
+    // Echo spatial memory buffer
     let echoMemoryBufferSmooth = 0;
     
     // ============================================================
@@ -261,101 +260,36 @@
     
     function applyEngineLiveBehavior(t, engineType, liveIntensity, liveTime, pressure, traits, rx, ry) {
         if (engineType === "Canonical") {
-            // Breathing / stabilization with more character
             const breath = Math.sin(liveTime * 0.8) * (0.03 + pressure * 0.05);
             const harmonic = Math.sin(t * Math.PI * 3 + liveTime) * 0.04 * pressure;
             const stability = 1.0 - liveIntensity * 0.08;
             return Math.max(0.03, Math.min(0.97, t * stability + breath + harmonic));
         } 
         else if (engineType === "Echo") {
-            // DIRECTIONAL SPATIAL MEMORY - biggest upgrade!
             const directional = Math.sin(rx * 2 + liveTime) * 0.5 + Math.cos(ry * 2 - liveTime) * 0.5;
             const trail = Math.sin(t * Math.PI * 2 + liveTime * 1.5) * (0.08 + pressure * 0.1);
             const trail2 = Math.sin(t * Math.PI * 4 + liveTime * 2.5) * (0.04 + pressure * 0.08);
             const memoryBlend = 0.15 + pressure * 0.2;
-            // Directional memory - flows across the image!
             const memory = echoMemoryBufferSmooth * memoryBlend * directional;
             let result = t * (0.65 - pressure * 0.1) + trail * (0.12 + pressure * 0.12) + trail2 * 0.06 + memory * 0.15;
-            // Smooth persistence (85% memory, 15% new)
             echoMemoryBufferSmooth = echoMemoryBufferSmooth * 0.85 + result * 0.15;
             return Math.max(0.03, Math.min(0.97, result));
         } 
-        else if (engineType === "Rupture") {
-            // Seam tearing / pressure spikes with deterministic pseudo-random
+        else {
             const spike = Math.abs(Math.sin(liveTime * (8 + pressure * 4))) * (0.12 + pressure * 0.15);
             const spike2 = Math.abs(Math.sin(liveTime * 15 + t * 8)) * (0.08 + pressure * 0.1);
             let result = t + spike + spike2;
-            // INSTABILITY ZONES - rupture tears in specific areas
             const zone = Math.sin(rx * 3) * Math.cos(ry * 3);
-            if (zone > 0.5) {
-                result *= 1.2 + pressure * 0.3;
-            }
-            if (zone < -0.5) {
-                result = Math.abs(result - 0.5) * 1.2;
-            }
-            // Deterministic instability spikes
+            if (zone > 0.5) result *= 1.2 + pressure * 0.3;
+            if (zone < -0.5) result = Math.abs(result - 0.5) * 1.2;
             const pseudoRand = Math.sin(t * 43758.5453 + liveTime * 12) * 0.5 + 0.5;
-            if (pressure > 0.6 && pseudoRand < (pressure - 0.6) * 0.35) {
-                result = Math.abs(result - 0.5) * 1.4;
-            }
+            if (pressure > 0.6 && pseudoRand < (pressure - 0.6) * 0.35) result = Math.abs(result - 0.5) * 1.4;
             return Math.max(0.02, Math.min(0.98, result));
         }
-        return t;
     }
     
     // ============================================================
-    // ENGINE-SPECIFIC SHAPING
-    // ============================================================
-    
-    function engineFrequencyShape(t, engineName, freqMultiplier, pressure) {
-        let out;
-        if (engineName === "Canonical") {
-            out = Math.sin(t * Math.PI * freqMultiplier * (0.8 + pressure * 0.1));
-            out = (out + 1) / 2;
-        } else if (engineName === "Echo") {
-            const a = Math.sin(t * Math.PI * freqMultiplier * (0.55 + pressure * 0.15));
-            const b = Math.cos(t * Math.PI * (2.0 + pressure * 0.5));
-            out = (a * (0.65 - pressure * 0.1) + b * (0.35 + pressure * 0.1) + 1) / 2;
-        } else {
-            out = Math.sin(t * Math.PI * freqMultiplier * (1.35 + pressure * 0.3));
-            out = (out + 1) / 2;
-        }
-        return Math.max(0.03, Math.min(0.97, out));
-    }
-    
-    function engineContrastShape(t, engineName, pressure) {
-        const k = 6.0;
-        let s = 1.0 / (1.0 + Math.exp(-k * (t - 0.5)));
-        s = s * 0.9 + Math.abs(Math.sin(t * Math.PI)) * 0.1;
-        let exponent;
-        if (engineName === "Canonical") exponent = 0.92 - pressure * 0.08;
-        else if (engineName === "Echo") exponent = 1.12 - pressure * 0.12;
-        else exponent = 0.68 - pressure * 0.1;
-        return Math.pow(s, Math.max(0.5, Math.min(1.5, exponent)));
-    }
-    
-    function engineColorDiscipline(r, g, b, engineName, t, time, pressure) {
-        if (engineName === "Canonical") {
-            const intensity = 0.96 - pressure * 0.04;
-            return { r: r * intensity, g: g * intensity, b: b * intensity };
-        }
-        if (engineName === "Echo") {
-            const bleed = 0.04 + pressure * 0.06;
-            return {
-                r: r * (0.96 - pressure * 0.04) + (Math.sin(time + t * 4) * 0.5 + 0.5) * bleed,
-                g: g * (0.96 - pressure * 0.04) + (Math.sin(time + 2.094 + t * 4) * 0.5 + 0.5) * bleed,
-                b: b * (0.96 - pressure * 0.04) + (Math.sin(time + 4.188 + t * 4) * 0.5 + 0.5) * bleed
-            };
-        }
-        return {
-            r: Math.min(1, r * (1.06 + pressure * 0.08)),
-            g: g * (0.88 - pressure * 0.06),
-            b: Math.min(1, b * (1.03 + pressure * 0.05))
-        };
-    }
-    
-    // ============================================================
-    // GEOMETRY & FRACTAL HELPERS (existing, kept for brevity)
+    // GEOMETRY HELPERS (condensed for brevity)
     // ============================================================
     
     function applyArchetypeGeometry(archetype, x, y) {
@@ -374,10 +308,8 @@
     function reinforceArchetype(archetype, rx, ry, pressure) {
         let x = rx, y = ry;
         const amp = 0.08 + pressure * 0.1;
-        
         x *= 1 + pressure * 0.15;
         y *= 1 - pressure * 0.1;
-        
         switch(archetype) {
             case "Signal": x += Math.sin(y * 4.0) * amp; break;
             case "Drift": y += Math.sin(x * 2.5) * amp * 1.5; break;
@@ -459,9 +391,7 @@
     function getPatternValue(x, y, time, engineName, pressure, primaryDriver, rx, ry, liveTime) {
         const r = Math.sqrt(x * x + y * y);
         const a = Math.atan2(y, x);
-        
         let val = 0;
-        
         if (engineName === "Echo") {
             val = Math.sin(a * 3 - r * (12 + pressure * 4) + time) * 0.4;
             val += Math.sin(a * 6 + r * (6 + pressure * 3) - time * 0.3) * 0.2;
@@ -473,25 +403,19 @@
             val = Math.sin(a * 5 - r * 18 + time) * 0.35;
             val += Math.sin(a * 10 + r * 9 - time * 0.5) * 0.15;
         }
-        
-        // PRIMARY DRIVER DOMINANCE - now much more noticeable!
         if (primaryDriver === "Pattern") {
             val += Math.sin(rx * 10 + ry * 10 + liveTime) * 0.15 * pressure;
         } else if (primaryDriver === "Fractal") {
             val = Math.pow(val, 0.8 - pressure * 0.1);
-        } else if (primaryDriver === "Color") {
-            // Color driver handled in getRichColor
         } else if (primaryDriver === "Composition") {
             val *= 1 + pressure * 0.2;
         }
-        
         return Math.max(0.02, Math.min(0.98, (val + 0.5)));
     }
     
     function applyCompositionTransform(ux, uy, composition, zoom, offsetX, offsetY) {
         let x = ux / zoom + offsetX;
         let y = uy / zoom + offsetY;
-        
         switch(composition) {
             case "Radial":
                 const r = Math.sqrt(x*x + y*y);
@@ -539,60 +463,80 @@
     
     function getRichColor(t, colorMood, time, primaryDriver, pressure) {
         let r, g, b;
-        
         const colorBoost = 1 + pressure * 0.3;
-        
         if (primaryDriver === "Color") {
             r = Math.sin(t * 40 + time) * 0.5 + 0.5;
             g = Math.sin(t * 40 + 2.094 + time) * 0.5 + 0.5;
             b = Math.sin(t * 40 + 4.188 + time) * 0.5 + 0.5;
-            return { 
-                r: Math.min(0.85, Math.max(0.15, r * colorBoost * 1.2)), 
-                g: Math.min(0.85, Math.max(0.15, g * colorBoost * 1.2)), 
-                b: Math.min(0.85, Math.max(0.15, b * colorBoost * 1.2)) 
-            };
+            return { r: Math.min(0.85, Math.max(0.15, r * colorBoost * 1.2)), g: Math.min(0.85, Math.max(0.15, g * colorBoost * 1.2)), b: Math.min(0.85, Math.max(0.15, b * colorBoost * 1.2)) };
         }
-        
         const chroma = 0.7 + pressure * 0.2;
         switch(colorMood) {
-            case "Volcanic": 
-                r = 1.0; 
-                g = 0.1 + 0.7 * Math.sin(t * 12 + time) * chroma; 
-                b = 0.0; 
-                break;
-            case "SolarFlare": 
-                r = 1.0; 
-                g = 0.5 + 0.5 * Math.sin(t * 14 + time) * chroma; 
-                b = 0.0; 
-                break;
-            default: 
-                r = Math.sin(t * 25 + time) * (0.5 + pressure * 0.15) + 0.5; 
-                g = Math.sin(t * 25 + 2.094 + time * 1.3) * (0.5 + pressure * 0.15) + 0.5; 
-                b = Math.sin(t * 25 + 4.188 + time * 0.7) * (0.5 + pressure * 0.15) + 0.5; 
-                break;
+            case "Volcanic": r = 1.0; g = 0.1 + 0.7 * Math.sin(t * 12 + time) * chroma; b = 0.0; break;
+            case "SolarFlare": r = 1.0; g = 0.5 + 0.5 * Math.sin(t * 14 + time) * chroma; b = 0.0; break;
+            default: r = Math.sin(t * 25 + time) * (0.5 + pressure * 0.15) + 0.5; g = Math.sin(t * 25 + 2.094 + time * 1.3) * (0.5 + pressure * 0.15) + 0.5; b = Math.sin(t * 25 + 4.188 + time * 0.7) * (0.5 + pressure * 0.15) + 0.5; break;
         }
-        return { 
-            r: Math.min(0.85, Math.max(0.15, r * colorBoost)), 
-            g: Math.min(0.85, Math.max(0.15, g * colorBoost)), 
-            b: Math.min(0.85, Math.max(0.15, b * colorBoost)) 
-        };
+        return { r: Math.min(0.85, Math.max(0.15, r * colorBoost)), g: Math.min(0.85, Math.max(0.15, g * colorBoost)), b: Math.min(0.85, Math.max(0.15, b * colorBoost)) };
     }
     
     function signatureColor(t, time, pressure) {
         const base = t * (30 + pressure * 15) + time;
-        return { 
-            r: Math.sin(base) * 0.5 + 0.5, 
-            g: Math.sin(base + 2.094) * 0.5 + 0.5, 
-            b: Math.sin(base + 4.188) * 0.5 + 0.5 
+        return { r: Math.sin(base) * 0.5 + 0.5, g: Math.sin(base + 2.094) * 0.5 + 0.5, b: Math.sin(base + 4.188) * 0.5 + 0.5 };
+    }
+    
+    function engineFrequencyShape(t, engineName, freqMultiplier, pressure) {
+        let out;
+        if (engineName === "Canonical") {
+            out = Math.sin(t * Math.PI * freqMultiplier * (0.8 + pressure * 0.1));
+            out = (out + 1) / 2;
+        } else if (engineName === "Echo") {
+            const a = Math.sin(t * Math.PI * freqMultiplier * (0.55 + pressure * 0.15));
+            const b = Math.cos(t * Math.PI * (2.0 + pressure * 0.5));
+            out = (a * (0.65 - pressure * 0.1) + b * (0.35 + pressure * 0.1) + 1) / 2;
+        } else {
+            out = Math.sin(t * Math.PI * freqMultiplier * (1.35 + pressure * 0.3));
+            out = (out + 1) / 2;
+        }
+        return Math.max(0.03, Math.min(0.97, out));
+    }
+    
+    function engineContrastShape(t, engineName, pressure) {
+        const k = 6.0;
+        let s = 1.0 / (1.0 + Math.exp(-k * (t - 0.5)));
+        s = s * 0.9 + Math.abs(Math.sin(t * Math.PI)) * 0.1;
+        let exponent;
+        if (engineName === "Canonical") exponent = 0.92 - pressure * 0.08;
+        else if (engineName === "Echo") exponent = 1.12 - pressure * 0.12;
+        else exponent = 0.68 - pressure * 0.1;
+        return Math.pow(s, Math.max(0.5, Math.min(1.5, exponent)));
+    }
+    
+    function engineColorDiscipline(r, g, b, engineName, t, time, pressure) {
+        if (engineName === "Canonical") {
+            const intensity = 0.96 - pressure * 0.04;
+            return { r: r * intensity, g: g * intensity, b: b * intensity };
+        }
+        if (engineName === "Echo") {
+            const bleed = 0.04 + pressure * 0.06;
+            return {
+                r: r * (0.96 - pressure * 0.04) + (Math.sin(time + t * 4) * 0.5 + 0.5) * bleed,
+                g: g * (0.96 - pressure * 0.04) + (Math.sin(time + 2.094 + t * 4) * 0.5 + 0.5) * bleed,
+                b: b * (0.96 - pressure * 0.04) + (Math.sin(time + 4.188 + t * 4) * 0.5 + 0.5) * bleed
+            };
+        }
+        return {
+            r: Math.min(1, r * (1.06 + pressure * 0.08)),
+            g: g * (0.88 - pressure * 0.06),
+            b: Math.min(1, b * (1.03 + pressure * 0.05))
         };
     }
     
     // ============================================================
-    // CORE PIXEL COMPUTATION
+    // CORE PIXEL COMPUTATION - WITH FADE FACTOR FOR PRESSURE
     // ============================================================
     
     function computePixel(options) {
-        const { x, y, width, height, traits, baseTraits, time, intensity, freqIndex, liveIntensity, liveTime, mode } = options;
+        const { x, y, width, height, traits, baseTraits, time, intensity, freqIndex, liveIntensity, liveTime, mode, fadeFactor = 1 } = options;
         
         const { engineType, rarityClass, anomalyClass, failureMode, spatialBehavior, archetype, anchorForm, colorMood, primaryDriver } = traits;
         const { zoom, offsetX, offsetY, baseMaxIter, layers, iterMult } = baseTraits;
@@ -600,9 +544,10 @@
         const isRupture = engineType === "Rupture";
         const isEcho = engineType === "Echo";
         
+        // PRESSURE IS MULTIPLIED BY FADE FACTOR - NO SUDDEN POP!
         let pressure = 0;
         if (mode === "live" && liveIntensity !== undefined) {
-            pressure = Math.pow(liveIntensity, 1.2);
+            pressure = Math.pow(liveIntensity, 1.2) * fadeFactor;
         }
         
         let ux = (x / width) * 4.0 - 2.5;
@@ -723,25 +668,19 @@
         let finalT = t;
         
         if (mode === "live" && liveIntensity !== undefined) {
-            // Apply engine-specific live behavior with spatial data
             finalT = applyEngineLiveBehavior(finalT, engineType, liveIntensity, liveTime, pressure, traits, rx, ry);
-            
-            // ENGINE-SPECIFIC WARP
             if (liveTime !== undefined) {
                 let warp;
                 const warpStrength = 0.12 + pressure * 0.18;
-                
                 if (engineType === "Canonical") {
                     warp = Math.sin(finalT * Math.PI * 2 + liveTime * 2) * (0.1 + pressure * 0.1);
                     finalT = finalT * (0.88 - pressure * 0.06) + warp * warpStrength;
-                } 
-                else if (engineType === "Echo") {
+                } else if (engineType === "Echo") {
                     const warp1 = Math.sin(finalT * Math.PI * 4 + liveTime * 3) * 0.08;
                     const warp2 = Math.sin(finalT * Math.PI * 8 + liveTime * 1.2) * 0.05;
                     warp = (warp1 + warp2) * (0.8 + pressure * 0.4);
                     finalT = finalT * (0.82 - pressure * 0.08) + warp * warpStrength;
-                } 
-                else {
+                } else {
                     const warp1 = Math.abs(Math.sin(liveTime * 10 + finalT * 6)) * (0.2 + pressure * 0.2);
                     const warp2 = Math.sin(finalT * Math.PI * 12 + liveTime * 8) * 0.1;
                     warp = (warp1 + warp2) * 0.8;
@@ -753,30 +692,19 @@
         
         finalT = Math.max(0.03, Math.min(0.97, finalT));
         
-        // AWAKENING STAGES
         if (mode === "live" && pressure !== undefined) {
-            if (pressure > 0.35) {
-                finalT = Math.pow(finalT, 0.92 - pressure * 0.08);
-            }
-            if (pressure > 0.60) {
-                finalT = Math.pow(finalT, 0.75 - pressure * 0.1);
-            }
+            if (pressure > 0.35) finalT = Math.pow(finalT, 0.92 - pressure * 0.08);
+            if (pressure > 0.60) finalT = Math.pow(finalT, 0.75 - pressure * 0.1);
             if (pressure > 0.82) {
-                // ASCENDED - BREAKS ENGINE RULES!
-                if (engineType === "Canonical") {
-                    finalT = Math.abs(Math.sin(finalT * Math.PI * 6));
-                } else if (engineType === "Echo") {
-                    finalT = (finalT + echoMemoryBufferSmooth) * 0.5;
-                } else {
-                    finalT = Math.abs(finalT - 0.5) * 2;
-                }
+                if (engineType === "Canonical") finalT = Math.abs(Math.sin(finalT * Math.PI * 6));
+                else if (engineType === "Echo") finalT = (finalT + echoMemoryBufferSmooth) * 0.5;
+                else finalT = Math.abs(finalT - 0.5) * 2;
                 finalT = Math.max(0.02, Math.min(0.98, finalT));
             }
         }
         
         let { r, g, b } = getRichColor(finalT, colorMood, time, primaryDriver, pressure);
         let colorDisciplined = engineColorDiscipline(r, g, b, engineType, finalT, time, pressure);
-        
         const sigColor = signatureColor(finalT, time, pressure);
         r = colorDisciplined.r * (0.65 - pressure * 0.05) + sigColor.r * (0.35 + pressure * 0.05);
         g = colorDisciplined.g * (0.65 - pressure * 0.05) + sigColor.g * (0.35 + pressure * 0.05);
@@ -806,33 +734,22 @@
     }
     
     // ============================================================
-    // CANONICAL RENDER (unchanged, kept for brevity)
+    // CANONICAL RENDER
     // ============================================================
     
     function renderCanonical(tokenId, txHash, width = CONFIG.RENDER_WIDTH, height = CONFIG.RENDER_HEIGHT) {
         const validTxHash = (txHash && txHash !== "0x0" && txHash !== "") ? txHash : `canonical_fallback_${tokenId}`;
-        
         const seed = getSeed(tokenId, validTxHash);
         const traits = generateTraits(seed, tokenId);
         const baseTraits = generateBaseTraits(seed, tokenId);
         const canonicalIntensity = getCanonicalIntensity(seed);
         const canonicalTime = getCanonicalTime(tokenId, seed, canonicalIntensity);
-        
         const freqRNG = makeSeededRand(splitSeed(seed, 300));
         const freqIndex = Math.floor(freqRNG() * 4);
-        
         const pixels = new Uint8ClampedArray(width * height * 4);
-        
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
-                const pixel = computePixel({
-                    x, y, width, height,
-                    traits, baseTraits,
-                    time: canonicalTime,
-                    intensity: canonicalIntensity,
-                    freqIndex,
-                    mode: "canonical"
-                });
+                const pixel = computePixel({ x, y, width, height, traits, baseTraits, time: canonicalTime, intensity: canonicalIntensity, freqIndex, mode: "canonical" });
                 const idx = (y * width + x) * 4;
                 pixels[idx] = pixel.r;
                 pixels[idx + 1] = pixel.g;
@@ -840,85 +757,53 @@
                 pixels[idx + 3] = 255;
             }
         }
-        
-        const eventScore = (traits.rarityClass === RARITY_CLASSES.RARE ? 1 : 0) +
-                          (traits.rarityClass === RARITY_CLASSES.MYTHIC ? 2 : 0) +
-                          (traits.rarityClass === RARITY_CLASSES.GRAIL ? 4 : 0) +
-                          (traits.failureMode === "Fracture" ? 2 : 0) +
-                          (traits.failureMode === "VoidBloom" ? 1 : 0) +
-                          (traits.engineType === "Rupture" ? 1 : 0) +
-                          (traits.anomalyClass ? 2 : 0);
-        
-        const metadata = {
-            name: `Dart HLGEN #${tokenId}`,
-            description: `Deterministic generative artwork. Engine: ${traits.engineType}. Rarity: ${traits.rarityClass}.`,
-            canonicalIntensity,
-            canonicalTime,
-            attributes: [
-                { trait_type: "Rarity Class", value: traits.rarityClass },
-                { trait_type: "Engine Type", value: traits.engineType },
-                { trait_type: "Archetype", value: traits.archetype },
-                { trait_type: "Anchor Form", value: traits.anchorForm },
-                { trait_type: "Primary Driver", value: traits.primaryDriver },
-                { trait_type: "Structure Type", value: traits.structureType },
-                { trait_type: "Color Mood", value: traits.colorMood },
-                { trait_type: "Spatial Behavior", value: traits.spatialBehavior },
-                { trait_type: "Failure Mode", value: traits.failureMode },
-                { trait_type: "Anomaly Class", value: traits.anomalyClass || "None" },
-                { trait_type: "Canonical Intensity", value: canonicalIntensity.toFixed(3) },
-                { trait_type: "Event Score", value: eventScore.toString() }
-            ]
-        };
-        
-        return {
-            seed,
-            traits,
-            baseTraits,
-            canonicalIntensity,
-            canonicalTime,
-            pixels,
-            metadata,
-            width,
-            height,
-            freqIndex,
-            eventScore
-        };
+        const eventScore = (traits.rarityClass === RARITY_CLASSES.RARE ? 1 : 0) + (traits.rarityClass === RARITY_CLASSES.MYTHIC ? 2 : 0) + (traits.rarityClass === RARITY_CLASSES.GRAIL ? 4 : 0) + (traits.failureMode === "Fracture" ? 2 : 0) + (traits.failureMode === "VoidBloom" ? 1 : 0) + (traits.engineType === "Rupture" ? 1 : 0) + (traits.anomalyClass ? 2 : 0);
+        const metadata = { name: `Dart HLGEN #${tokenId}`, description: `Deterministic generative artwork. Engine: ${traits.engineType}. Rarity: ${traits.rarityClass}.`, canonicalIntensity, canonicalTime, attributes: [
+            { trait_type: "Rarity Class", value: traits.rarityClass }, { trait_type: "Engine Type", value: traits.engineType }, { trait_type: "Archetype", value: traits.archetype }, { trait_type: "Anchor Form", value: traits.anchorForm }, { trait_type: "Primary Driver", value: traits.primaryDriver }, { trait_type: "Structure Type", value: traits.structureType }, { trait_type: "Color Mood", value: traits.colorMood }, { trait_type: "Spatial Behavior", value: traits.spatialBehavior }, { trait_type: "Failure Mode", value: traits.failureMode }, { trait_type: "Anomaly Class", value: traits.anomalyClass || "None" }, { trait_type: "Canonical Intensity", value: canonicalIntensity.toFixed(3) }, { trait_type: "Event Score", value: eventScore.toString() }
+        ] };
+        return { seed, traits, baseTraits, canonicalIntensity, canonicalTime, pixels, metadata, width, height, freqIndex, eventScore };
     }
     
     // ============================================================
-    // LIVE RENDER (simplified, overlays reduced)
+    // DRAW UTILITY
+    // ============================================================
+    
+    function drawToCanvas(canvas, renderResult) {
+        if (!canvas || !renderResult || !renderResult.pixels) return false;
+        const { pixels, width, height } = renderResult;
+        const ctx = canvas.getContext('2d');
+        canvas.width = width;
+        canvas.height = height;
+        const imageData = ctx.createImageData(width, height);
+        imageData.data.set(pixels);
+        ctx.putImageData(imageData, 0, 0);
+        return true;
+    }
+    
+    // ============================================================
+    // LIVE SESSION WITH SMOOTH FADE
     // ============================================================
     
     function createLiveSession(tokenId, txHash) {
         const canonical = renderCanonical(tokenId, txHash);
-        
-        let currentLiveIntensity = canonical.canonicalIntensity;
-        let targetLiveIntensity = canonical.canonicalIntensity;
-        let currentLiveTime = canonical.canonicalTime;
         let animationId = null;
         let canvasElement = null;
         let startTime = null;
         let fadeStartTime = null;
-        const fadeDuration = 1000;
+        const fadeDuration = 800;
         
-        function renderFrame() {
+        // Start with canonical values
+        let currentLiveIntensity = canonical.canonicalIntensity;
+        let targetLiveIntensity = canonical.canonicalIntensity;
+        let currentLiveTime = canonical.canonicalTime;
+        
+        function renderFrame(fadeFactor = 1) {
             if (!canvasElement) return;
-            
             const { width, height, traits, baseTraits, canonicalTime, canonicalIntensity, freqIndex } = canonical;
             const pixels = new Uint8ClampedArray(width * height * 4);
-            
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < width; x++) {
-                    const pixel = computePixel({
-                        x, y, width, height,
-                        traits, baseTraits,
-                        time: canonicalTime,
-                        intensity: canonicalIntensity,
-                        freqIndex,
-                        mode: "live",
-                        liveIntensity: currentLiveIntensity,
-                        liveTime: currentLiveTime
-                    });
+                    const pixel = computePixel({ x, y, width, height, traits, baseTraits, time: canonicalTime, intensity: canonicalIntensity, freqIndex, mode: "live", liveIntensity: currentLiveIntensity, liveTime: currentLiveTime, fadeFactor });
                     const idx = (y * width + x) * 4;
                     pixels[idx] = pixel.r;
                     pixels[idx + 1] = pixel.g;
@@ -926,24 +811,19 @@
                     pixels[idx + 3] = 255;
                 }
             }
-            
             const ctx = canvasElement.getContext('2d');
             const imageData = ctx.createImageData(width, height);
             imageData.data.set(pixels);
             ctx.putImageData(imageData, 0, 0);
             
-            // MINIMAL OVERLAYS - just intensity meter and badge
-            const pressure = Math.pow(Math.max(0.05, Math.min(0.95, currentLiveIntensity)), 1.35);
-            
-            // Intensity meter only (no heavy overlays)
+            // Minimal overlay - just intensity meter
+            const pressure = Math.pow(Math.max(0.05, Math.min(0.95, currentLiveIntensity)), 1.35) * fadeFactor;
             ctx.fillStyle = "rgba(0,0,0,0.6)";
             ctx.fillRect(10, height - 30, 100, 5);
-            
             let badgeText = "";
             if (pressure > 0.82) badgeText = "🔥 ASCENDED";
             else if (pressure > 0.60) badgeText = "✨ AWAKENED";
             else if (pressure > 0.35) badgeText = "⚡ STIRRING";
-            
             if (badgeText) {
                 ctx.fillStyle = `hsl(${pressure * 120}, 100%, 55%)`;
                 ctx.fillRect(10, height - 30, currentLiveIntensity * 100, 5);
@@ -959,11 +839,7 @@
         function fetchIntensity() {
             fetch('https://raw.githubusercontent.com/ivxxbeats/farcaster-intensity/main/intensity.json?t=' + Date.now())
                 .then(r => r.json())
-                .then(data => {
-                    if (data && typeof data.intensity === 'number') {
-                        targetLiveIntensity = Math.max(0.05, Math.min(0.95, data.intensity));
-                    }
-                })
+                .then(data => { if (data && typeof data.intensity === 'number') targetLiveIntensity = Math.max(0.05, Math.min(0.95, data.intensity)); })
                 .catch(() => console.warn("Intensity fetch failed"));
         }
         
@@ -972,22 +848,20 @@
             startTime = null;
             fadeStartTime = performance.now();
             
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#0a0a0f';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // FIRST FRAME: Draw canonical (NO BLACK SCREEN!)
+            drawToCanvas(canvas, canonical);
             
             function animate(timestamp) {
                 if (!startTime) startTime = timestamp;
                 const elapsed = (timestamp - startTime) / 1000;
                 const fadeElapsed = timestamp - fadeStartTime;
-                const fadeFactor = Math.min(1, fadeElapsed / fadeDuration);
-                
+                const rawFadeFactor = Math.min(1, fadeElapsed / fadeDuration);
+                const fadeFactor = rawFadeFactor * rawFadeFactor * (3 - 2 * rawFadeFactor);
                 const liveWarpTime = elapsed % (Math.PI * 2);
                 currentLiveTime = canonical.canonicalTime * (1 - fadeFactor) + liveWarpTime * fadeFactor;
-                
-                currentLiveIntensity += (targetLiveIntensity - currentLiveIntensity) * 0.04;
-                
-                renderFrame();
+                const desiredIntensity = canonical.canonicalIntensity * (1 - fadeFactor) + targetLiveIntensity * fadeFactor;
+                currentLiveIntensity += (desiredIntensity - currentLiveIntensity) * 0.15;
+                renderFrame(fadeFactor);
                 animationId = requestAnimationFrame(animate);
             }
             
@@ -996,110 +870,46 @@
             animationId = requestAnimationFrame(animate);
         }
         
-        function stop() {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-            }
-        }
+        function stop() { if (animationId) { cancelAnimationFrame(animationId); animationId = null; } }
         
         function updateInfoPanel() {
             const infoDiv = document.getElementById('info');
-            if (infoDiv) {
-                infoDiv.innerHTML = 
-                    canonical.traits.engineType + ' · ' +
-                    canonical.traits.rarityClass + ' · ' +
-                    canonical.traits.archetype + ' · ' +
-                    canonical.traits.anchorForm + ' · ' +
-                    canonical.traits.primaryDriver + ' · ' +
-                    canonical.traits.failureMode + ' · ' +
-                    (canonical.traits.anomalyClass || 'None') + ' · ' +
-                    'ES:' + (canonical.eventScore || 0);
-            }
+            if (infoDiv) infoDiv.innerHTML = `${canonical.traits.engineType} · ${canonical.traits.rarityClass} · ${canonical.traits.archetype} · ${canonical.traits.anchorForm} · ${canonical.traits.primaryDriver} · ${canonical.traits.failureMode} · ${canonical.traits.anomalyClass || 'None'} · ES: ${canonical.eventScore || 0}`;
         }
         
-        return {
-            startAnimation,
-            stop,
-            getCanonical: () => canonical,
-            getLiveIntensity: () => currentLiveIntensity,
-            setLiveIntensity: (val) => { targetLiveIntensity = Math.max(0.05, Math.min(0.95, val)); },
-            updateInfoPanel
-        };
+        return { startAnimation, stop, getCanonical: () => canonical, getLiveIntensity: () => currentLiveIntensity, setLiveIntensity: (val) => { targetLiveIntensity = Math.max(0.05, Math.min(0.95, val)); }, updateInfoPanel };
     }
     
-    function drawToCanvas(canvas, renderResult) {
-        if (!canvas || !renderResult || !renderResult.pixels) return false;
-        
-        const { pixels, width, height } = renderResult;
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        const imageData = ctx.createImageData(width, height);
-        imageData.data.set(pixels);
-        ctx.putImageData(imageData, 0, 0);
-        
-        return true;
-    }
+    // ============================================================
+    // AUTO INIT
+    // ============================================================
     
     function autoInit() {
         const canvas = document.getElementById('artCanvas');
         if (!canvas) return;
-        
         const params = new URLSearchParams(window.location.search);
         const tokenId = params.get('tokenId') || params.get('tid') || '1';
         const txHash = params.get('txHash') || params.get('h');
-        
         const freeze = params.get('freeze') === 'true';
         const mode = params.get('mode') || (freeze ? 'canonical' : 'live');
-        
         if (mode === 'canonical' || freeze) {
-            const validTxHash = (txHash && txHash !== '0x0') ? txHash : `canonical_fallback_${tokenId}`;
+            const validTxHash = (txHash && txHash !== '0x0') ? txHash : `fallback_${tokenId}`;
             const result = renderCanonical(tokenId, validTxHash);
             drawToCanvas(canvas, result);
-            
             const infoDiv = document.getElementById('info');
-            if (infoDiv) {
-                infoDiv.innerHTML = 
-                    result.traits.engineType + ' · ' +
-                    result.traits.rarityClass + ' · ' +
-                    result.traits.archetype + ' · ' +
-                    result.traits.anchorForm + ' · ' +
-                    result.traits.primaryDriver + ' · ' +
-                    result.traits.failureMode + ' · ' +
-                    (result.traits.anomalyClass || 'None') + ' · ' +
-                    'ES:' + (result.eventScore || 0);
-            }
+            if (infoDiv) infoDiv.innerHTML = `${result.traits.engineType} · ${result.traits.rarityClass} · ${result.traits.archetype} · ${result.traits.anchorForm} · ${result.traits.primaryDriver} · ${result.traits.failureMode} · ${result.traits.anomalyClass || 'None'} · ES:${result.eventScore || 0}`;
         } else {
-            const validTxHash = (txHash && txHash !== '0x0') ? txHash : `canonical_fallback_${tokenId}`;
+            const validTxHash = (txHash && txHash !== '0x0') ? txHash : `fallback_${tokenId}`;
             const session = createLiveSession(tokenId, validTxHash);
             session.startAnimation(canvas);
             session.updateInfoPanel();
         }
     }
     
-    window.DartHLGEN = {
-        version: "1.5",
-        renderCanonical,
-        createLiveSession,
-        drawToCanvas,
-        getSeed,
-        CONFIG
-    };
+    window.DartHLGEN = { version: "1.6", renderCanonical, createLiveSession, drawToCanvas, getSeed, CONFIG };
     
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', autoInit);
-    } else {
-        autoInit();
-    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoInit);
+    else autoInit();
     
-    console.log("Dart HLGEN v1.5 - ELITE EDITION");
-    console.log("  ✅ Directional spatial memory for Echo (trails flow across image)");
-    console.log("  ✅ Ascended breaks engine physics (new rules)");
-    console.log("  ✅ Primary Driver dominance (Pattern adds texture, Fractal sharpens, etc.)");
-    console.log("  ✅ Rupture instability zones (tearing in specific areas)");
-    console.log("  ✅ Canonical transformation (harmonic breathing)");
-    console.log("  ✅ Reduced overlays (core engine carries weight)");
+    console.log("Dart HLGEN v1.6 - NO FLASH: Canonical first, pressure ramps with fade");
 })();
