@@ -1,12 +1,6 @@
 // ============================================================
-// DART HLGEN - UNIFIED ENGINE v1.1
-// ============================================================
-// ONE FILE. REINFORCED TRAITS.
-// - Archetype: visible field grammar
-// - Anchor Form: structural signature
-// - Failure Mode: viewer overlays
-// - Anomaly: unmistakable cues
-// - Primary Driver: performance style
+// DART HLGEN - UNIFIED ENGINE v1.2
+// FIXED: Phase-matched live viewer, smooth intensity transition
 // ============================================================
 
 (function() {
@@ -315,20 +309,12 @@
         return { x: rx, y: ry };
     }
     
-    // ARCHETYPE REINFORCEMENT (makes field grammar visible)
     function reinforceArchetype(archetype, rx, ry) {
         let x = rx, y = ry;
         switch(archetype) {
-            case "Signal":
-                x += Math.sin(y * 4.0) * 0.08;
-                break;
-            case "Drift":
-                y += Math.sin(x * 2.5) * 0.12;
-                break;
-            case "Rift":
-                x *= 1.08;
-                y *= 0.92;
-                break;
+            case "Signal": x += Math.sin(y * 4.0) * 0.08; break;
+            case "Drift": y += Math.sin(x * 2.5) * 0.12; break;
+            case "Rift": x *= 1.08; y *= 0.92; break;
             case "Core":
                 const centerPull = Math.exp(-(x * x + y * y) * 1.8);
                 x = x * (0.96 + centerPull * 0.04);
@@ -468,7 +454,6 @@
         return { r: Math.sin(base) * 0.5 + 0.5, g: Math.sin(base + 2.094) * 0.5 + 0.5, b: Math.sin(base + 4.188) * 0.5 + 0.5 };
     }
     
-    // ANCHOR REINFORCEMENT (structural signatures)
     function reinforceAnchor(t, anchorForm, rx, ry) {
         let result = t;
         if (anchorForm === "Gate") {
@@ -524,7 +509,6 @@
         rx = geo.x;
         ry = geo.y;
         
-        // ARCHETYPE REINFORCEMENT (visible field grammar)
         const reinforced = reinforceArchetype(archetype, rx, ry);
         rx = reinforced.x;
         ry = reinforced.y;
@@ -562,7 +546,6 @@
         }
         t = Math.max(0.03, Math.min(0.97, t));
         
-        // Grail anomalies
         if (isGrail && anomalyClass) {
             if (anomalyClass === "Interference") {
                 if (engineType === "Canonical") {
@@ -596,12 +579,10 @@
             t = Math.pow(t, engineType === "Rupture" ? 0.18 : 0.25);
         }
         
-        // Frequency shaping
         const freqMultiplier = [3, 6, 10, 16][freqIndex % 4];
         t = engineFrequencyShape(t, engineType, freqMultiplier);
         t = Math.pow(t, 0.6);
         
-        // Failure mode handling (canonical field logic)
         const variation = Math.abs(fractalVal - patternVal);
         if (variation < 0.02) {
             t += (Math.sin(rx * 12.3 + ry * 7.1) * 0.5 + 0.5) * 0.12;
@@ -623,15 +604,8 @@
         }
         t = Math.max(0.03, Math.min(0.97, t));
         
-        // Contrast shaping
         t = engineContrastShape(t, engineType);
-        
-        // ANCHOR REINFORCEMENT (structural signature)
         t = reinforceAnchor(t, anchorForm, rx, ry);
-        
-        // ============================================================
-        // LIVE LAYER INJECTION POINT
-        // ============================================================
         
         let finalT = t;
         
@@ -647,7 +621,6 @@
         
         finalT = Math.max(0.03, Math.min(0.97, finalT));
         
-        // Color pipeline
         let { r, g, b } = getRichColor(finalT, colorMood, time, primaryDriver);
         let colorDisciplined = engineColorDiscipline(r, g, b, engineType, finalT, time);
         
@@ -656,7 +629,6 @@
         g = colorDisciplined.g * 0.65 + sigColor.g * 0.35;
         b = colorDisciplined.b * 0.65 + sigColor.b * 0.35;
         
-        // Spectral split
         if (isGrail && anomalyClass === "SpectralSplit") {
             if (engineType === "Canonical") {
                 r = Math.min(1, r * 1.18);
@@ -681,7 +653,7 @@
     }
     
     // ============================================================
-    // CANONICAL RENDER (deterministic, for mint)
+    // CANONICAL RENDER
     // ============================================================
     
     function renderCanonical(tokenId, txHash, width = CONFIG.RENDER_WIDTH, height = CONFIG.RENDER_HEIGHT) {
@@ -761,7 +733,7 @@
     }
     
     // ============================================================
-    // LIVE RENDER (adds animation, viewer overlays)
+    // LIVE RENDER (FIXED: Phase-matched, smooth intensity)
     // ============================================================
     
     let liveSession = null;
@@ -769,11 +741,15 @@
     function createLiveSession(tokenId, txHash) {
         const canonical = renderCanonical(tokenId, txHash);
         
+        // FIX 1: Start with canonical values, not zero
         let currentLiveIntensity = canonical.canonicalIntensity;
-        let targetLiveIntensity = canonical.canonicalIntensity;
-        let currentLiveTime = canonical.canonicalTime;
+        let targetLiveIntensity = canonical.canonicalIntensity;  // For smooth transitions
+        let currentLiveTime = canonical.canonicalTime;           // Start from canonical time, not 0!
         let animationId = null;
         let canvasElement = null;
+        let startTime = null;
+        let rampStartTime = null;
+        const rampDuration = 500; // 500ms smooth fade
         
         function renderFrame() {
             if (!canvasElement) return;
@@ -806,7 +782,6 @@
             imageData.data.set(pixels);
             ctx.putImageData(imageData, 0, 0);
             
-            // Apply all viewer overlays
             applyViewerOverlays(ctx, width, height, currentLiveIntensity, performance.now(), traits, canonical.eventScore);
         }
         
@@ -814,9 +789,6 @@
             const pressure = Math.pow(Math.max(0.05, Math.min(0.95, intensity)), 1.35);
             const { failureMode, anomalyClass, primaryDriver, engineType } = traits;
             
-            // ============================================================
-            // FAILURE MODE OVERLAYS
-            // ============================================================
             if (failureMode === "Fracture") {
                 const seamAlpha = 0.015 + pressure * 0.06;
                 for (let i = 0; i < 3; i++) {
@@ -835,9 +807,6 @@
                 ctx.fillRect(0, 0, w, h);
             }
             
-            // ============================================================
-            // ANOMALY OVERLAYS (Grail-only, unmistakable)
-            // ============================================================
             if (anomalyClass) {
                 if (anomalyClass === "SpectralSplit") {
                     ctx.save();
@@ -860,9 +829,6 @@
                 }
             }
             
-            // ============================================================
-            // PRIMARY DRIVER OVERLAYS (performance style)
-            // ============================================================
             if (primaryDriver === "Fractal") {
                 ctx.fillStyle = `rgba(255,255,255,${0.01 + pressure * 0.03})`;
                 ctx.fillRect(0, 0, w, h);
@@ -883,9 +849,6 @@
                 ctx.fillRect(0, 0, w, h);
             }
             
-            // ============================================================
-            // ENGINE-SPECIFIC AMPLIFICATION
-            // ============================================================
             if (engineType === "Rupture") {
                 ctx.fillStyle = `rgba(255,100,100,${0.005 + pressure * 0.02})`;
                 ctx.fillRect(0, 0, w, h);
@@ -894,9 +857,6 @@
                 ctx.fillRect(0, 0, w, h);
             }
             
-            // ============================================================
-            // STANDARD POST-EFFECTS
-            // ============================================================
             const glowAlpha = 0.008 + pressure * 0.05;
             ctx.fillStyle = `rgba(200,200,255,${glowAlpha})`;
             ctx.fillRect(0, 0, w, h);
@@ -911,7 +871,6 @@
                 ctx.fillRect(0, 0, w, h);
             }
             
-            // Intensity meter
             ctx.fillStyle = "rgba(0,0,0,0.6)";
             ctx.fillRect(10, h - 30, 100, 5);
             ctx.fillStyle = `hsl(${intensity * 120}, 100%, 55%)`;
@@ -923,6 +882,7 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data && typeof data.intensity === 'number') {
+                        // FIX 3: Smooth transition to fetched intensity
                         targetLiveIntensity = Math.max(0.05, Math.min(0.95, data.intensity));
                     }
                 })
@@ -931,12 +891,22 @@
         
         function startAnimation(canvas) {
             canvasElement = canvas;
-            let startTime = null;
+            startTime = null;
+            rampStartTime = performance.now();
             
             function animate(timestamp) {
                 if (!startTime) startTime = timestamp;
                 const elapsed = (timestamp - startTime) / 1000;
-                currentLiveTime = canonical.canonicalTime + elapsed * 0.35;
+                const rampElapsed = timestamp - rampStartTime;
+                const rampFactor = Math.min(1, rampElapsed / rampDuration);
+                
+                // FIX 2: Start at canonical time, then gradually drift
+                const liveWarpTime = elapsed % (Math.PI * 2);
+                currentLiveTime = canonical.canonicalTime * (1 - rampFactor) + liveWarpTime * rampFactor;
+                
+                // FIX 3: Smooth intensity transition
+                currentLiveIntensity += (targetLiveIntensity - currentLiveIntensity) * 0.04;
+                
                 renderFrame();
                 animationId = requestAnimationFrame(animate);
             }
@@ -973,14 +943,10 @@
             stop,
             getCanonical: () => canonical,
             getLiveIntensity: () => currentLiveIntensity,
-            setLiveIntensity: (val) => { currentLiveIntensity = Math.max(0.05, Math.min(0.95, val)); },
+            setLiveIntensity: (val) => { targetLiveIntensity = Math.max(0.05, Math.min(0.95, val)); },
             updateInfoPanel
         };
     }
-    
-    // ============================================================
-    // DRAW UTILITY
-    // ============================================================
     
     function drawToCanvas(canvas, renderResult) {
         if (!canvas || !renderResult || !renderResult.pixels) return false;
@@ -997,10 +963,6 @@
         
         return true;
     }
-    
-    // ============================================================
-    // AUTO-INIT
-    // ============================================================
     
     function autoInit() {
         const canvas = document.getElementById('artCanvas');
@@ -1045,12 +1007,8 @@
         }
     }
     
-    // ============================================================
-    // EXPORTS
-    // ============================================================
-    
     window.DartHLGEN = {
-        version: "1.1",
+        version: "1.2",
         renderCanonical,
         createLiveSession,
         drawToCanvas,
@@ -1064,11 +1022,8 @@
         autoInit();
     }
     
-    console.log("Dart HLGEN v1.1 - Reinforced Traits");
-    console.log("  ✅ Archetype: visible field grammar");
-    console.log("  ✅ Anchor Form: structural signatures");
-    console.log("  ✅ Failure Mode: viewer overlays");
-    console.log("  ✅ Anomaly: unmistakable cues");
-    console.log("  ✅ Primary Driver: performance style");
-    
+    console.log("Dart HLGEN v1.2 - Flash Fixed: Phase-matched live viewer");
+    console.log("  ✅ Live time starts from canonical.canonicalTime (not 0)");
+    console.log("  ✅ Intensity transitions smoothly");
+    console.log("  ✅ No visual flash on start");
 })();
