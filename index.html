@@ -48,11 +48,32 @@
             background: #e94560;
             color: #1a1a2e;
         }
+.awakening-badge {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.8);
+    color: #e94560;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: monospace;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border: 1px solid rgba(233,69,96,0.3);
+}
+.awakening-badge.active { opacity: 1; }
+canvas { transition: filter 0.3s ease; }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <canvas id="artCanvas" width="640" height="640"></canvas>
+        <canvas id="artCanvas" width="640" height="640">
+<div class="awakening-badge" id="awakeningBadge">AWAKENED</div></canvas>
         <div class="info" id="info">Loading...</div>
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="Token ID" value="1">
@@ -116,3 +137,5 @@
     </script>
 </body>
 </html>
+
+
