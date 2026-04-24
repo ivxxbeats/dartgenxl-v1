@@ -894,7 +894,14 @@
             }
             
             // ============================================================
-            // STANDARD POST-EFFECTS
+                            // Intensity-driven glitch
+                if (intensity > 0.6 && Math.random() < intensity * 0.1) {
+                    const shiftX = (Math.random() - 0.5) * intensity * 8;
+                    const shiftY = (Math.random() - 0.5) * intensity * 4;
+                    ctx.drawImage(ctx.canvas, shiftX, shiftY);
+                }
+
+// STANDARD POST-EFFECTS
             // ============================================================
             const glowAlpha = 0.008 + pressure * 0.05;
             ctx.fillStyle = `rgba(200,200,255,${glowAlpha})`;
@@ -1071,3 +1078,5 @@
     console.log("  ✅ Primary Driver: performance style");
     
 })();
+
+
