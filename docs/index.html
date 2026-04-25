@@ -65,7 +65,7 @@
             width: 100%;
             height: auto;
             max-width: 640px;
-            background: #000000;
+            background: #050508;
         }
         
         .intensity-section {
@@ -121,6 +121,33 @@
             color: #666688;
         }
         
+        .mode-badge.boot {
+            background: linear-gradient(135deg, #ffaa5520, #ff885520);
+            color: #ffaa55;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        /* Engine-specific badge colors */
+        .mode-badge.echo {
+            background: linear-gradient(135deg, #5a5aff20, #88aaff20);
+            color: #88aaff;
+        }
+        
+        .mode-badge.rupture {
+            background: linear-gradient(135deg, #ff555520, #ff885520);
+            color: #ff7755;
+        }
+        
+        .mode-badge.canonical {
+            background: linear-gradient(135deg, #55ffaa20, #88ffcc20);
+            color: #55ffaa;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
         .traits-panel {
             margin-top: 16px;
             background: #0d0d12;
@@ -157,6 +184,34 @@
         .trait-item span:last-child {
             color: #e8e8f0;
             font-weight: 500;
+        }
+        
+        .boot-indicator {
+            margin-top: 8px;
+            font-size: 8px;
+            text-align: center;
+            letter-spacing: 1px;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        .boot-indicator.echo {
+            color: #88aaff;
+        }
+        
+        .boot-indicator.rupture {
+            color: #ff7755;
+        }
+        
+        .boot-indicator.canonical {
+            color: #55ffaa;
+        }
+        
+        .engine-identity {
+            margin-top: 6px;
+            font-size: 7px;
+            color: #555577;
+            text-align: center;
+            letter-spacing: 0.5px;
         }
         
         .controls {
@@ -246,7 +301,7 @@
     <div class="container">
         <div class="header">
             <div class="title">DART GENXL</div>
-            <div class="version-badge" id="versionBadge">v1.8.5</div>
+            <div class="version-badge" id="versionBadge">v1.9.0</div>
         </div>
         
         <canvas id="artCanvas" width="640" height="640"></canvas>
@@ -254,15 +309,17 @@
         <div class="intensity-section">
             <div class="intensity-label">
                 <span>LIVE INTENSITY</span>
-                <span><span id="intensityPercent">—</span><span id="fetchStatus" class="fetch-status"></span></span>
+                <span><span id="intensityPercent">0%</span><span id="fetchStatus" class="fetch-status"></span></span>
             </div>
             <div class="intensity-bar-container">
-                <div class="intensity-bar-fill" id="intensityBar"></div>
+                <div class="intensity-bar-fill" id="intensityBar" style="width: 0%;"></div>
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 10px;">
                 <span class="mode-badge" id="modeBadge">STATIC</span>
                 <span style="font-size: 9px; color: #666688;">PHASE: <span id="pressureStage">—</span></span>
             </div>
+            <div id="bootIndicator" class="boot-indicator" style="display: none;"></div>
+            <div id="engineIdentity" class="engine-identity"></div>
         </div>
         
         <div class="traits-panel">
@@ -300,8 +357,9 @@
     <script src="engine.js"></script>
     <script>
         // ============================================================
-        // TERMINAL VIEWER - SYNCED WITH ENGINE START STATE
-        // NO CANONICAL INTENSITY LEAK INTO UI
+        // TERMINAL VIEWER - v1.9.0
+        // Engine-specific identity display
+        // Echo, Rupture, Canonical each have unique visual signatures
         // ============================================================
         
         const canvas = document.getElementById('artCanvas');
@@ -313,6 +371,8 @@
         const testIntensityBtn = document.getElementById('testIntensityBtn');
         const statusDiv = document.getElementById('status');
         const versionBadge = document.getElementById('versionBadge');
+        const bootIndicator = document.getElementById('bootIndicator');
+        const engineIdentityDiv = document.getElementById('engineIdentity');
         
         // UI Elements
         const intensityBar = document.getElementById('intensityBar');
@@ -341,6 +401,29 @@
         let currentCanonicalResult = null;
         let engineStarted = false;
         
+        let lastIntensity = 0;
+        let bootActive = false;
+        let currentEngineType = null;
+        
+        // Engine-specific boot messages and identity descriptions
+        const engineBootMessages = {
+            "Canonical": {
+                message: "◉ BREATHING FIELD ◉",
+                identity: "stable · controlled · alive",
+                trait: "breathes harmonically"
+            },
+            "Echo": {
+                message: "◉ FADING FROM TRAILS ◉",
+                identity: "lagging · echoing · smeared",
+                trait: "trails behind itself"
+            },
+            "Rupture": {
+                message: "◉ SNAPPING IN ◉",
+                identity: "unstable · fracturing · tearing",
+                trait: "shocks and fractures"
+            }
+        };
+        
         function updateIntensityUI(intensity, isLive = true) {
             const percent = Math.floor(intensity * 100);
             intensityBar.style.width = `${percent}%`;
@@ -354,10 +437,79 @@
             pressureStageSpan.textContent = phaseText;
             
             if (isLive && currentSession) {
-                modeBadge.textContent = phaseText;
-                modeBadge.classList.add('live');
-                modeBadge.classList.remove('static');
+                // Boot ends when intensity > 0.05 AND engine has started
+                if (bootActive && intensity > 0.05 && engineStarted) {
+                    bootActive = false;
+                    bootIndicator.style.display = 'none';
+                    // Apply engine-specific badge styling after boot
+                    applyEngineBadgeStyle(currentEngineType, false);
+                }
+                
+                if (!bootActive) {
+                    modeBadge.textContent = phaseText;
+                    modeBadge.classList.add('live');
+                    modeBadge.classList.remove('static', 'boot', 'echo', 'rupture', 'canonical');
+                    applyEngineBadgeStyle(currentEngineType, true);
+                }
             }
+        }
+        
+        function applyEngineBadgeStyle(engineType, isLive) {
+            if (!engineType) return;
+            
+            // Remove all engine-specific classes
+            modeBadge.classList.remove('echo', 'rupture', 'canonical');
+            
+            if (isLive && !bootActive) {
+                // Add engine-specific color to live badge
+                if (engineType === "Echo") {
+                    modeBadge.classList.add('echo');
+                } else if (engineType === "Rupture") {
+                    modeBadge.classList.add('rupture');
+                } else if (engineType === "Canonical") {
+                    modeBadge.classList.add('canonical');
+                }
+            }
+            
+            // Update boot indicator styling
+            bootIndicator.classList.remove('echo', 'rupture', 'canonical');
+            if (engineType === "Echo") {
+                bootIndicator.classList.add('echo');
+            } else if (engineType === "Rupture") {
+                bootIndicator.classList.add('rupture');
+            } else if (engineType === "Canonical") {
+                bootIndicator.classList.add('canonical');
+            }
+        }
+        
+        function showBootIndicator(engineType) {
+            currentEngineType = engineType;
+            const info = engineBootMessages[engineType] || {
+                message: `◉ ${engineType} ENGINE ◉`,
+                identity: "initializing",
+                trait: "booting"
+            };
+            
+            bootIndicator.textContent = info.message;
+            bootIndicator.style.display = 'block';
+            engineIdentityDiv.textContent = info.identity;
+            
+            modeBadge.textContent = 'BOOTING';
+            modeBadge.classList.add('boot');
+            modeBadge.classList.remove('live', 'static', 'echo', 'rupture', 'canonical');
+            applyEngineBadgeStyle(engineType, false);
+            bootActive = true;
+            
+            // Fallback hide after fadeDuration + 100ms (safety)
+            setTimeout(() => {
+                if (bootActive) {
+                    bootActive = false;
+                    bootIndicator.style.display = 'none';
+                    if (modeBadge.classList.contains('boot')) {
+                        modeBadge.classList.remove('boot');
+                    }
+                }
+            }, 900);
         }
         
         function showFetchStatus(success, value = null) {
@@ -383,15 +535,23 @@
         }
         
         function updateModeUI(isLiveMode) {
-            if (isLiveMode) {
-                modeBadge.textContent = 'LIVE';
-                modeBadge.classList.add('live');
-                modeBadge.classList.remove('static');
+            if (isLiveMode && currentEngineType) {
+                const info = engineBootMessages[currentEngineType] || { identity: "booting" };
+                engineIdentityDiv.textContent = info.identity;
+                modeBadge.textContent = 'BOOTING';
+                modeBadge.classList.add('boot');
+                modeBadge.classList.remove('static', 'live', 'echo', 'rupture', 'canonical');
+                applyEngineBadgeStyle(currentEngineType, false);
+                bootActive = true;
+                updateIntensityUI(0, true);
             } else {
                 modeBadge.textContent = 'STATIC';
-                modeBadge.classList.remove('live');
+                modeBadge.classList.remove('live', 'boot', 'echo', 'rupture', 'canonical');
                 modeBadge.classList.add('static');
                 updateIntensityUI(0, false);
+                bootIndicator.style.display = 'none';
+                engineIdentityDiv.textContent = '';
+                bootActive = false;
             }
         }
         
@@ -410,10 +570,17 @@
             traitMicro.textContent = t.microEvent || 'None';
             traitES.textContent = result.eventScore || '0';
             traitCanonicalInt.textContent = result.canonicalIntensity ? result.canonicalIntensity.toFixed(3) : '—';
+            
+            // Update engine identity description
+            if (t.engineType && engineBootMessages[t.engineType]) {
+                engineIdentityDiv.textContent = engineBootMessages[t.engineType].identity;
+            }
         }
         
         function stopCurrentSession() {
             engineStarted = false;
+            bootActive = false;
+            bootIndicator.style.display = 'none';
             if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
@@ -426,7 +593,7 @@
         
         function showLoading(message = 'RENDERING...') {
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = '#050508';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#8888aa';
             ctx.font = '11px "Inter", monospace';
@@ -488,6 +655,8 @@
                 currentCanonicalResult = result;
                 DartHLGEN.drawToCanvas(canvas, result);
                 updateTraitsUI(result);
+                currentEngineType = result.traits.engineType;
+                engineIdentityDiv.textContent = engineBootMessages[currentEngineType]?.identity || "";
                 
                 statusDiv.innerHTML = `FREEZE MODE — ${result.traits.engineType} · ${result.traits.rarityClass} <span class="cursor"></span>`;
             } catch(e) {
@@ -497,13 +666,13 @@
             }
         }
         
-        // 🆕 ANIMATION LOOP - syncs UI with engine's displayIntensity
         function startUILoop() {
             function updateLoop() {
                 if (currentSession && engineStarted && currentSession.getDisplayIntensity) {
                     const intensity = currentSession.getDisplayIntensity();
                     if (intensity !== undefined && intensity !== null) {
                         updateIntensityUI(intensity, true);
+                        lastIntensity = intensity;
                     }
                 }
                 animationFrameId = requestAnimationFrame(updateLoop);
@@ -511,7 +680,7 @@
             animationFrameId = requestAnimationFrame(updateLoop);
         }
         
-        // LIVE MODE - SYNCED with engine start state
+        // LIVE MODE - Engine-specific identity
         function startLiveMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value.trim() || '1';
@@ -519,38 +688,35 @@
             
             statusDiv.innerHTML = `LIVE MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
             showLoading(`BOOTING LIVE ENGINE...`);
-            updateModeUI(true);
             
             try {
-                // Get canonical for display ONLY (traits, not intensity)
                 const canonicalResult = DartHLGEN.renderCanonical(tokenId, txHash);
                 currentCanonicalResult = canonicalResult;
-                DartHLGEN.drawToCanvas(canvas, canonicalResult);
                 updateTraitsUI(canonicalResult);
+                currentEngineType = canonicalResult.traits.engineType;
                 
-                // Create session
+                // Show engine-specific boot indicator
+                showBootIndicator(canonicalResult.traits.engineType);
+                updateModeUI(true);
+                
                 const session = DartHLGEN.createLiveSession(tokenId, txHash);
                 currentSession = session;
                 session.startAnimation(canvas);
                 
-                // 🔑 CRITICAL: Sync UI with engine's starting displayIntensity (0.5)
-                // NOT with canonical.canonicalIntensity
                 if (session.getDisplayIntensity) {
                     updateIntensityUI(session.getDisplayIntensity(), true);
                 } else {
-                    // Fallback to neutral if getDisplayIntensity not available
-                    updateIntensityUI(0.5, true);
+                    updateIntensityUI(0, true);
                 }
                 
-                // Mark engine as started after one frame to ensure displayIntensity is initialized
                 requestAnimationFrame(() => {
                     engineStarted = true;
                 });
                 
-                // Start animation loop for continuous UI updates
                 startUILoop();
                 
-                statusDiv.innerHTML = `LIVE MODE — PRESSURE SENSITIVE · STARTING AT 50% <span class="cursor"></span>`;
+                const engineInfo = engineBootMessages[canonicalResult.traits.engineType] || { trait: "booting" };
+                statusDiv.innerHTML = `LIVE MODE — ${canonicalResult.traits.engineType} · ${engineInfo.trait} · INTENSITY RAMPING FROM 0% <span class="cursor"></span>`;
             } catch(e) {
                 console.error("Live mode error:", e);
                 showLoading('LIVE MODE FAILED');
@@ -643,7 +809,7 @@
             if (e.key === 't' || e.key === 'T') testIntensityFetch();
         });
         
-        console.log("Terminal Viewer Ready — UI synced with engine start state (0.5), no canonical bleed");
+        console.log("Terminal Viewer Ready — v1.9.0, engine-specific identity display");
     </script>
 </body>
 </html>
