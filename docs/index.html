@@ -48,18 +48,13 @@
             letter-spacing: 1px;
         }
         
-        .badge {
-            font-size: 10px;
-            color: #8888aa;
-            background: rgba(255, 255, 255, 0.05);
+        .version-badge {
+            font-size: 9px;
+            color: #5a5aff;
+            background: rgba(90, 90, 255, 0.1);
             padding: 4px 10px;
             border-radius: 20px;
-        }
-        
-        /* CANVAS - NO UI OVERLAY, CLEAN */
-        .canvas-wrapper {
-            position: relative;
-            display: block;
+            font-family: monospace;
         }
         
         canvas {
@@ -73,7 +68,6 @@
             background: #000000;
         }
         
-        /* INTENSITY SECTION - BELOW CANVAS, NOT OVERLAY */
         .intensity-section {
             margin-top: 20px;
             background: #0d0d12;
@@ -165,31 +159,6 @@
             font-weight: 500;
         }
         
-        .affects-panel {
-            margin-top: 16px;
-            background: #0d0d12;
-            border-radius: 16px;
-            padding: 14px;
-        }
-        
-        .affects-title {
-            color: #aaaacc;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-        
-        .affects-text {
-            font-size: 9px;
-            color: #777799;
-            line-height: 1.6;
-        }
-        
-        .affects-highlight {
-            color: #aa88ff;
-        }
-        
         .controls {
             margin-top: 16px;
             display: flex;
@@ -250,9 +219,21 @@
             50% { opacity: 0; }
         }
         
-        /* CANONICAL INTENSITY HIGHLIGHT */
         .canonical-value {
             color: #5a5aff !important;
+        }
+        
+        .fetch-status {
+            font-size: 8px;
+            margin-left: 8px;
+        }
+        
+        .fetch-status.success {
+            color: #5a5aff;
+        }
+        
+        .fetch-status.error {
+            color: #ff6666;
         }
         
         @media (max-width: 640px) {
@@ -265,19 +246,15 @@
     <div class="container">
         <div class="header">
             <div class="title">DART GENXL</div>
-            <div class="badge">THE ART OF FARCASTER</div>
+            <div class="version-badge" id="versionBadge">v1.8.5</div>
         </div>
         
-        <!-- CANVAS - PURE ART, NO OVERLAYS -->
-        <div class="canvas-wrapper">
-            <canvas id="artCanvas" width="640" height="640"></canvas>
-        </div>
+        <canvas id="artCanvas" width="640" height="640"></canvas>
         
-        <!-- INTENSITY SECTION - BELOW CANVAS -->
         <div class="intensity-section">
             <div class="intensity-label">
-                <span id="intensityLabel">LIVE INTENSITY</span>
-                <span id="intensityPercent">—</span>
+                <span>LIVE INTENSITY</span>
+                <span><span id="intensityPercent">—</span><span id="fetchStatus" class="fetch-status"></span></span>
             </div>
             <div class="intensity-bar-container">
                 <div class="intensity-bar-fill" id="intensityBar"></div>
@@ -288,7 +265,6 @@
             </div>
         </div>
         
-        <!-- TRAITS PANEL -->
         <div class="traits-panel">
             <div class="traits-title">TOKEN TRAITS</div>
             <div class="traits-grid" id="traitsGrid">
@@ -307,24 +283,13 @@
             </div>
         </div>
         
-        <!-- AFFECTS PANEL -->
-        <div class="affects-panel">
-            <div class="affects-title">INTENSITY PHASES</div>
-            <div class="affects-text">
-                <span class="affects-highlight">● 0-35%: STIRRING</span> — subtle motion<br>
-                <span class="affects-highlight">● 35-60%: AWAKENING</span> — increased contrast<br>
-                <span class="affects-highlight">● 60-82%: AWAKENED</span> — color boost, distortion<br>
-                <span class="affects-highlight">● 82-100%: ASCENDED</span> — reality shift
-            </div>
-        </div>
-        
-        <!-- CONTROLS -->
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="TOKEN ID" value="1">
             <input type="text" id="hashInput" placeholder="TX HASH" value="0xabc123">
             <button id="renderBtn">⟳ RENDER</button>
             <button id="randomBtn">🎲 RANDOM</button>
             <button id="freezeBtn">❄️ FREEZE</button>
+            <button id="testIntensityBtn">📊 TEST</button>
         </div>
         
         <div class="status" id="status">
@@ -335,7 +300,8 @@
     <script src="engine.js"></script>
     <script>
         // ============================================================
-        // TERMINAL VIEWER - SHOWS RAW FETCHED INTENSITY
+        // TERMINAL VIEWER - SYNCED WITH ENGINE START STATE
+        // NO CANONICAL INTENSITY LEAK INTO UI
         // ============================================================
         
         const canvas = document.getElementById('artCanvas');
@@ -344,14 +310,16 @@
         const renderBtn = document.getElementById('renderBtn');
         const randomBtn = document.getElementById('randomBtn');
         const freezeBtn = document.getElementById('freezeBtn');
+        const testIntensityBtn = document.getElementById('testIntensityBtn');
         const statusDiv = document.getElementById('status');
+        const versionBadge = document.getElementById('versionBadge');
         
         // UI Elements
-        const intensityLabel = document.getElementById('intensityLabel');
         const intensityBar = document.getElementById('intensityBar');
         const intensityPercent = document.getElementById('intensityPercent');
         const modeBadge = document.getElementById('modeBadge');
         const pressureStageSpan = document.getElementById('pressureStage');
+        const fetchStatusSpan = document.getElementById('fetchStatus');
         
         // Trait elements
         const traitEngine = document.getElementById('traitEngine');
@@ -369,8 +337,9 @@
         
         let currentSession = null;
         let isFrozen = false;
-        let intensityUpdateInterval = null;
+        let animationFrameId = null;
         let currentCanonicalResult = null;
+        let engineStarted = false;
         
         function updateIntensityUI(intensity, isLive = true) {
             const percent = Math.floor(intensity * 100);
@@ -378,15 +347,10 @@
             intensityPercent.textContent = `${percent}%`;
             
             let phaseText = "";
-            if (intensity > 0.82) {
-                phaseText = "ASCENDED";
-            } else if (intensity > 0.60) {
-                phaseText = "AWAKENED";
-            } else if (intensity > 0.35) {
-                phaseText = "AWAKENING";
-            } else {
-                phaseText = "STIRRING";
-            }
+            if (intensity > 0.82) phaseText = "ASCENDED";
+            else if (intensity > 0.60) phaseText = "AWAKENED";
+            else if (intensity > 0.35) phaseText = "AWAKENING";
+            else phaseText = "STIRRING";
             pressureStageSpan.textContent = phaseText;
             
             if (isLive && currentSession) {
@@ -396,14 +360,34 @@
             }
         }
         
+        function showFetchStatus(success, value = null) {
+            if (success && value !== null) {
+                fetchStatusSpan.textContent = `✓ ${(value * 100).toFixed(0)}%`;
+                fetchStatusSpan.className = "fetch-status success";
+                setTimeout(() => {
+                    if (fetchStatusSpan.textContent.includes('✓')) {
+                        fetchStatusSpan.textContent = '';
+                        fetchStatusSpan.className = "fetch-status";
+                    }
+                }, 2000);
+            } else if (!success) {
+                fetchStatusSpan.textContent = "⚠ failed";
+                fetchStatusSpan.className = "fetch-status error";
+                setTimeout(() => {
+                    if (fetchStatusSpan.textContent.includes('failed')) {
+                        fetchStatusSpan.textContent = '';
+                        fetchStatusSpan.className = "fetch-status";
+                    }
+                }, 3000);
+            }
+        }
+        
         function updateModeUI(isLiveMode) {
             if (isLiveMode) {
-                intensityLabel.textContent = 'LIVE INTENSITY (FETCHED)';
                 modeBadge.textContent = 'LIVE';
                 modeBadge.classList.add('live');
                 modeBadge.classList.remove('static');
             } else {
-                intensityLabel.textContent = 'CANONICAL (STATIC)';
                 modeBadge.textContent = 'STATIC';
                 modeBadge.classList.remove('live');
                 modeBadge.classList.add('static');
@@ -429,9 +413,10 @@
         }
         
         function stopCurrentSession() {
-            if (intensityUpdateInterval) {
-                clearInterval(intensityUpdateInterval);
-                intensityUpdateInterval = null;
+            engineStarted = false;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
             }
             if (currentSession && currentSession.stop) {
                 currentSession.stop();
@@ -449,7 +434,44 @@
             ctx.fillText(message, canvas.width/2, canvas.height/2);
         }
         
-        // FREEZE MODE - Canonical only, NO live intensity
+        async function testIntensityFetch() {
+            statusDiv.innerHTML = `TESTING INTENSITY FETCH... <span class="cursor"></span>`;
+            try {
+                const url = 'https://raw.githubusercontent.com/ivxxbeats/farcaster-intensity/main/intensity.json?t=' + Date.now();
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                let intensityValue = null;
+                if (typeof data.intensity === 'number') {
+                    intensityValue = data.intensity;
+                } else if (data.awakenedEngine && data.awakenedEngine.progression) {
+                    const prog = data.awakenedEngine.progression;
+                    if (prog === "dormant") intensityValue = 0.15;
+                    else if (prog === "stirring") intensityValue = 0.25;
+                    else if (prog === "awakening") intensityValue = 0.45;
+                    else if (prog === "awakened") intensityValue = 0.70;
+                    else if (prog === "ascended") intensityValue = 0.90;
+                    else if (prog === "base") intensityValue = 0.35;
+                    else intensityValue = 0.35;
+                }
+                
+                if (intensityValue !== null) {
+                    showFetchStatus(true, intensityValue);
+                    if (currentSession && currentSession.setLiveIntensity) {
+                        currentSession.setLiveIntensity(intensityValue);
+                    }
+                    statusDiv.innerHTML = `INTENSITY: ${(intensityValue * 100).toFixed(0)}% <span class="cursor"></span>`;
+                } else {
+                    showFetchStatus(false);
+                    statusDiv.innerHTML = `INTENSITY: parse failed <span class="cursor"></span>`;
+                }
+            } catch(e) {
+                showFetchStatus(false);
+                statusDiv.innerHTML = `FETCH FAILED: ${e.message.substring(0, 30)} <span class="cursor"></span>`;
+            }
+        }
+        
+        // FREEZE MODE
         function renderCanonicalMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value.trim() || '1';
@@ -475,7 +497,21 @@
             }
         }
         
-        // LIVE MODE - Shows raw fetched intensity from API
+        // 🆕 ANIMATION LOOP - syncs UI with engine's displayIntensity
+        function startUILoop() {
+            function updateLoop() {
+                if (currentSession && engineStarted && currentSession.getDisplayIntensity) {
+                    const intensity = currentSession.getDisplayIntensity();
+                    if (intensity !== undefined && intensity !== null) {
+                        updateIntensityUI(intensity, true);
+                    }
+                }
+                animationFrameId = requestAnimationFrame(updateLoop);
+            }
+            animationFrameId = requestAnimationFrame(updateLoop);
+        }
+        
+        // LIVE MODE - SYNCED with engine start state
         function startLiveMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value.trim() || '1';
@@ -486,35 +522,35 @@
             updateModeUI(true);
             
             try {
-                // First render canonical as base
+                // Get canonical for display ONLY (traits, not intensity)
                 const canonicalResult = DartHLGEN.renderCanonical(tokenId, txHash);
                 currentCanonicalResult = canonicalResult;
                 DartHLGEN.drawToCanvas(canvas, canonicalResult);
                 updateTraitsUI(canonicalResult);
                 
-                // Start live session
+                // Create session
                 const session = DartHLGEN.createLiveSession(tokenId, txHash);
                 currentSession = session;
                 session.startAnimation(canvas);
                 
-                // Show RAW FETCHED intensity, not the blended canonical value
-                intensityUpdateInterval = setInterval(() => {
-                    if (currentSession) {
-                        // Use the raw target intensity (fetched from API)
-                        let rawIntensity = null;
-                        if (currentSession.getRawTargetIntensity) {
-                            rawIntensity = currentSession.getRawTargetIntensity();
-                        } else if (currentSession.getLiveIntensity) {
-                            rawIntensity = currentSession.getLiveIntensity();
-                        }
-                        
-                        if (rawIntensity !== undefined && rawIntensity !== null) {
-                            updateIntensityUI(rawIntensity, true);
-                        }
-                    }
-                }, 50);
+                // 🔑 CRITICAL: Sync UI with engine's starting displayIntensity (0.5)
+                // NOT with canonical.canonicalIntensity
+                if (session.getDisplayIntensity) {
+                    updateIntensityUI(session.getDisplayIntensity(), true);
+                } else {
+                    // Fallback to neutral if getDisplayIntensity not available
+                    updateIntensityUI(0.5, true);
+                }
                 
-                statusDiv.innerHTML = `LIVE MODE — PRESSURE SENSITIVE · FETCHING INTENSITY <span class="cursor"></span>`;
+                // Mark engine as started after one frame to ensure displayIntensity is initialized
+                requestAnimationFrame(() => {
+                    engineStarted = true;
+                });
+                
+                // Start animation loop for continuous UI updates
+                startUILoop();
+                
+                statusDiv.innerHTML = `LIVE MODE — PRESSURE SENSITIVE · STARTING AT 50% <span class="cursor"></span>`;
             } catch(e) {
                 console.error("Live mode error:", e);
                 showLoading('LIVE MODE FAILED');
@@ -586,10 +622,12 @@
         renderBtn.onclick = () => { if (isFrozen) renderCanonicalMode(); else startLiveMode(); };
         randomBtn.onclick = randomToken;
         freezeBtn.onclick = toggleFreeze;
+        testIntensityBtn.onclick = testIntensityFetch;
         
         function waitForEngine() {
             if (typeof DartHLGEN !== 'undefined') {
                 console.log("Engine loaded v" + DartHLGEN.version);
+                versionBadge.textContent = `v${DartHLGEN.version}`;
                 init();
             } else {
                 setTimeout(waitForEngine, 100);
@@ -602,9 +640,10 @@
             if (e.key === 'ArrowRight') randomToken();
             if (e.key === 'r' || e.key === 'R') { if (isFrozen) renderCanonicalMode(); else startLiveMode(); }
             if (e.key === 'f' || e.key === 'F') toggleFreeze();
+            if (e.key === 't' || e.key === 'T') testIntensityFetch();
         });
         
-        console.log("Terminal Viewer Ready — Showing raw fetched intensity");
+        console.log("Terminal Viewer Ready — UI synced with engine start state (0.5), no canonical bleed");
     </script>
 </body>
 </html>
