@@ -1,7 +1,9 @@
 // ============================================================
-// DART GENXL ENGINE v1.8.5
-// FIXED: Live intensity starts neutral, no canonical bleed
-// Canonical intensity ONLY for static mint metadata
+// DART GENXL ENGINE v1.9.0
+// Engine-specific identity behaviors:
+// - Echo: Trail + memory drag, spatial drift
+// - Rupture: Shock + fracture zones, instability flicker
+// - Canonical: Breathing field, harmonic layering, center coherence
 // ============================================================
 
 (function() {
@@ -301,7 +303,7 @@
     }
     
     // ============================================================
-    // GEOMETRY & ENGINE HELPERS (condensed for brevity - full implementations)
+    // GEOMETRY & ENGINE HELPERS
     // ============================================================
     
     function applyArchetypeGeometry(archetype, x, y) { 
@@ -596,16 +598,18 @@
     }
     
     function computePixel(options) {
-        const { x, y, width, height, traits, baseTraits, time, intensity, freqIndex, liveIntensity, liveTime, mode, fadeFactor = 1, echoMemoryBuffer = 0 } = options;
+        const { x, y, width, height, traits, baseTraits, time, intensity, freqIndex, liveIntensity, liveTime, mode, fadeFactor = 1, echoMemoryBuffer = 0, bootMotion = 0 } = options;
         const { engineType, rarityClass, anomalyClass, failureMode, spatialBehavior, archetype, anchorForm, colorMood, primaryDriver, motionVariant, textureVariant, paletteVariant, engineVariant, microEvent } = traits;
         const { zoom, offsetX, offsetY, baseMaxIter, layers, iterMult, microWarp, phaseBias, symmetryBreak } = baseTraits;
         const isGrail = rarityClass === RARITY_CLASSES.GRAIL;
         const isRupture = engineType === "Rupture";
         const isEcho = engineType === "Echo";
         
+        // Pressure calculation with boot motion
         let pressure = 0;
         if (mode === "live" && liveIntensity !== undefined) {
             pressure = Math.pow(liveIntensity, 1.2) * fadeFactor;
+            pressure += bootMotion * 0.15;
         }
         
         let ux = (x / width) * 4.0 - 2.5;
@@ -630,6 +634,15 @@
         ry = reinforced.y;
         rx *= 1.2;
         ry *= 1.2;
+        
+        // ============================================================
+        // 🟦 ECHO: TRAIL + MEMORY DRAG & SPATIAL DRIFT
+        // ============================================================
+        if (isEcho) {
+            // Spatial drift - creates "lagging behind itself" feeling
+            rx += Math.sin(liveTime * 1.5 + ry * 2) * 0.12 * pressure;
+            ry += Math.cos(liveTime * 1.2 + rx * 2) * 0.12 * pressure;
+        }
         
         if (spatialBehavior === "Asymmetrical") { rx += 0.4; ry -= 0.2; }
         if (spatialBehavior === "FlowField") { rx += Math.sin(ry * 2.5) * 0.3; ry += Math.cos(rx * 2.5) * 0.3; }
@@ -661,6 +674,52 @@
         else { 
             t = fractalVal * 0.75 + patternVal * 0.25; 
         }
+        t = Math.max(0.03, Math.min(0.97, t));
+        
+        // ============================================================
+        // ENGINE-SPECIFIC IDENTITY BEHAVIORS (applied after base t)
+        // ============================================================
+        
+        // 🟦 ECHO: Trail + memory drag (lagging behind itself)
+        if (isEcho && mode === "live") {
+            const echoLag = Math.sin(liveTime * 2) * 0.15;
+            const trailShift = echoLag * (0.5 + pressure);
+            t = t * 0.85 + Math.sin((t + trailShift) * Math.PI * 2) * 0.15;
+        }
+        
+        // 🟥 RUPTURE: Shock + fracture zones + instability flicker
+        if (isRupture && mode === "live") {
+            // Early shock (uses bootMotion heavily in first second)
+            const shock = Math.exp(-liveTime * 6) * 0.8;
+            t += shock * Math.sin(rx * ry * 8);
+            
+            // Fracture zones - tearing reality
+            const fractureZone = Math.sin(rx * 3) * Math.cos(ry * 3);
+            if (fractureZone > 0.4) {
+                t = Math.abs(t - 0.5) * 1.4;
+            }
+            
+            // Instability flicker
+            const flicker = Math.sin(liveTime * 20 + t * 10) * 0.08;
+            t += flicker * pressure;
+        }
+        
+        // 🟩 CANONICAL: Breathing field + harmonic layering + center coherence
+        if (!isEcho && !isRupture && mode === "live") {
+            // Breathing field - stable, controlled, alive
+            const breath = Math.sin(liveTime * 0.8) * 0.05;
+            t = t * (0.98 - pressure * 0.05) + breath;
+            
+            // Harmonic layering
+            const harmonic = Math.sin(t * Math.PI * 2 + liveTime) * 0.04;
+            t += harmonic * (0.5 + pressure);
+            
+            // Subtle center coherence
+            const center = Math.exp(-(rx * rx + ry * ry) * 2.0);
+            t = t * (1 - center * 0.1) + center * 0.1;
+        }
+        
+        // Clamp after engine-specific modifications
         t = Math.max(0.03, Math.min(0.97, t));
         
         if (isGrail && anomalyClass) {
@@ -804,7 +863,7 @@
     }
     
     // ============================================================
-    // CANONICAL RENDER
+    // CANONICAL RENDER (for minting/freeze only)
     // ============================================================
     
     function renderCanonical(tokenId, txHash, width = CONFIG.RENDER_WIDTH, height = CONFIG.RENDER_HEIGHT) {
@@ -865,38 +924,55 @@
     }
     
     // ============================================================
-    // LIVE SESSION - NO CANONICAL INTENSITY BLEED
-    // Live intensity starts neutral, ONLY from fetch
+    // LIVE SESSION - POLISHED
     // ============================================================
     
     function createLiveSession(tokenId, txHash) {
+        // Cache canonical result (computed once)
         const canonical = renderCanonical(tokenId, txHash);
+        
         let animationId = null, canvasElement = null, startTime = null, fadeStartTime = null;
         const fadeDuration = 800;
         
-        // 🔑 CRITICAL: Live intensity starts NEUTRAL, NOT from canonical
-        // Canonical intensity is ONLY for mint metadata, never for live pressure
-        let currentLiveIntensity = 0.5;
-        let targetLiveIntensity = 0.5;
+        // Intensity starts at 0.0 and ramps up
+        let currentLiveIntensity = 0.0;
+        let targetLiveIntensity = 0.0;
         let hasFetchedOnce = false;
-        let currentLiveTime = canonical.canonicalTime;
+        let currentLiveTime = 0;
         
         let echoMemoryBufferSmooth = 0;
         let isFirstFrame = true;
         let intervalId = null;
-        let displayIntensity = 0.5;
+        let displayIntensity = 0.0;
+        
+        // Boot tied to fadeFactor - ends when fadeFactor reaches 1
+        function getEngineBootCurve(engineType, t) {
+            t = Math.max(0, Math.min(1, t));
+            
+            if (engineType === "Echo") {
+                // Slow rise → overshoot → settle
+                const slow = t * t * (3 - 2 * t);
+                const overshoot = Math.sin(t * Math.PI) * 0.18;
+                return Math.min(1.15, slow + overshoot);
+            }
+            
+            if (engineType === "Rupture") {
+                // Spike → drop → stabilize
+                const spike = Math.exp(-t * 8) * 0.9;
+                const settle = t * t * (3 - 2 * t);
+                return Math.min(1.15, Math.max(0, settle + spike * (1 - t)));
+            }
+            
+            // Canonical: smooth sinusoidal ramp
+            return 0.5 - Math.cos(t * Math.PI) * 0.5;
+        }
         
         function fetchIntensity() {
             const url = 'https://raw.githubusercontent.com/ivxxbeats/farcaster-intensity/main/intensity.json?t=' + Date.now();
             
             fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    if (!data) return;
-                    
                     let intensityValue = null;
                     
                     if (typeof data.intensity === 'number') {
@@ -912,15 +988,10 @@
                         else if (prog === "base") intensityValue = 0.35;
                         else intensityValue = 0.35;
                     }
-                    else if (data.metrics && typeof data.metrics.casts === 'number') {
-                        intensityValue = Math.min(0.95, 0.2 + (data.metrics.casts / 50));
-                    }
                     
                     if (intensityValue !== null) {
-                        // 🔑 DIRECT SET - no blending with canonical
                         targetLiveIntensity = Math.max(0.05, Math.min(0.95, intensityValue));
                         hasFetchedOnce = true;
-                        console.log(`[DART] Live intensity set to: ${targetLiveIntensity}`);
                     }
                 })
                 .catch(err => console.warn("[DART] Fetch failed:", err));
@@ -934,61 +1005,53 @@
             const width = Math.floor(canonical.width * scale);
             const height = Math.floor(canonical.height * scale);
             
+            // First frame: draw neutral/loading frame
             if (isFirstFrame) {
                 const ctx = canvasElement.getContext('2d');
                 canvasElement.width = width;
                 canvasElement.height = height;
                 
-                if (scale === 0.5) {
-                    const downsampled = new Uint8ClampedArray(width * height * 4);
-                    for (let y = 0; y < height; y++) {
-                        for (let x = 0; x < width; x++) {
-                            const srcIdx = ((y * 2) * canonical.width + (x * 2)) * 4;
-                            const dstIdx = (y * width + x) * 4;
-                            downsampled[dstIdx] = canonical.pixels[srcIdx];
-                            downsampled[dstIdx + 1] = canonical.pixels[srcIdx + 1];
-                            downsampled[dstIdx + 2] = canonical.pixels[srcIdx + 2];
-                            downsampled[dstIdx + 3] = 255;
-                        }
-                    }
-                    const imgData = ctx.createImageData(width, height);
-                    imgData.data.set(downsampled);
-                    ctx.putImageData(imgData, 0, 0);
-                } else {
-                    const imgData = ctx.createImageData(width, height);
-                    imgData.data.set(canonical.pixels);
-                    ctx.putImageData(imgData, 0, 0);
-                }
+                ctx.fillStyle = '#050508';
+                ctx.fillRect(0, 0, width, height);
+                
+                ctx.fillStyle = '#2a2a3a';
+                ctx.font = '10px "Inter", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`◉ ${canonical.traits.engineType} ENGINE ◉`, width/2, height/2);
+                
+                ctx.fillStyle = '#5a5aff';
+                ctx.beginPath();
+                ctx.arc(width/2, height/2 + 25, 3, 0, Math.PI * 2);
+                ctx.fill();
                 
                 isFirstFrame = false;
+                startTime = performance.now();
+                fadeStartTime = startTime;
                 animationId = requestAnimationFrame(renderFrame);
                 return;
             }
             
             const now = performance.now();
-            if (!startTime) startTime = now;
-            if (!fadeStartTime) fadeStartTime = now;
-            
             const elapsed = (now - startTime) / 1000;
             const fadeElapsed = now - fadeStartTime;
             const rawFadeFactor = Math.min(1, fadeElapsed / fadeDuration);
             const fadeFactor = rawFadeFactor * rawFadeFactor * (3 - 2 * rawFadeFactor);
             
-            const liveWarpTime = elapsed % (Math.PI * 2);
-            currentLiveTime = canonical.canonicalTime * (1 - fadeFactor) + liveWarpTime * fadeFactor;
+            const liveWarpTime = (elapsed * 0.5) % (Math.PI * 2);
+            currentLiveTime = liveWarpTime;
             
-            // 🔑 INTENSITY COMES ONLY FROM FETCHED VALUE
-            // NO blending with canonical.canonicalIntensity
+            // Boot tied to fadeFactor - ends when fadeFactor === 1
+            const bootCurve = getEngineBootCurve(canonical.traits.engineType, rawFadeFactor);
+            const bootMotion = bootCurve * (1 - fadeFactor);
+            
+            // Intensity ramps from 0.0 up to target
             if (hasFetchedOnce) {
-                // Smooth transition to target intensity (but never uses canonical)
                 currentLiveIntensity += (targetLiveIntensity - currentLiveIntensity) * 0.12;
+            } else {
+                currentLiveIntensity += (0.3 - currentLiveIntensity) * 0.05;
             }
             
-            // displayIntensity follows the same smooth value
             displayIntensity = currentLiveIntensity;
-            
-            // Pressure calculation uses only live intensity, never canonical
-            const pressure = Math.pow(currentLiveIntensity, 1.2) * fadeFactor;
             
             const pixels = new Uint8ClampedArray(width * height * 4);
             for (let y = 0; y < height; y++) {
@@ -1001,14 +1064,15 @@
                         width: canonical.width, height: canonical.height, 
                         traits: canonical.traits, 
                         baseTraits: canonical.baseTraits, 
-                        time: canonical.canonicalTime, 
+                        time: currentLiveTime,
                         intensity: canonical.canonicalIntensity, 
                         freqIndex: canonical.freqIndex, 
                         mode: "live", 
                         liveIntensity: currentLiveIntensity, 
                         liveTime: currentLiveTime, 
                         fadeFactor,
-                        echoMemoryBuffer: echoMemoryBufferSmooth
+                        echoMemoryBuffer: echoMemoryBufferSmooth,
+                        bootMotion: bootMotion
                     });
                     const idx = (y * width + x) * 4;
                     pixels[idx] = pixel.r;
@@ -1018,6 +1082,7 @@
                 }
             }
             
+            // Update echo memory
             let avgR = 0, avgG = 0, avgB = 0;
             for (let i = 0; i < pixels.length; i += 4) {
                 avgR += pixels[i];
@@ -1039,17 +1104,16 @@
         function startAnimation(canvas) {
             canvasElement = canvas;
             startTime = null;
-            fadeStartTime = performance.now();
+            fadeStartTime = null;
             isFirstFrame = true;
             echoMemoryBufferSmooth = 0;
             hasFetchedOnce = false;
             
-            // Reset to neutral on each session start
-            currentLiveIntensity = 0.5;
-            targetLiveIntensity = 0.5;
-            displayIntensity = 0.5;
+            currentLiveIntensity = 0.0;
+            targetLiveIntensity = 0.0;
+            displayIntensity = 0.0;
+            currentLiveTime = 0;
             
-            // Fetch immediately
             fetchIntensity();
             intervalId = setInterval(fetchIntensity, 15000);
             
@@ -1091,7 +1155,7 @@
     // ============================================================
     
     window.DartHLGEN = { 
-        version: "1.8.5", 
+        version: "1.9.0", 
         renderCanonical, 
         createLiveSession, 
         drawToCanvas, 
@@ -1099,5 +1163,5 @@
         CONFIG 
     };
     
-    console.log("Dart GenXL Engine v1.8.5 - Live intensity starts neutral, no canonical bleed");
+    console.log("Dart GenXL Engine v1.9.0 - Engine-specific identity: Echo (trail+drift), Rupture (shock+fracture), Canonical (breathing+harmonics)");
 })();
