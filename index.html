@@ -3,217 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DART GENXL // THE ART OF FARCASTER</title>
+    <title>DART GENXL</title>
+    
+    <!-- ============================================ -->
+    <!-- FARCASTER FRAME v2 META TAGS                 -->
+    <!-- ============================================ -->
+    <meta property="fc:frame" content="vNext" />
+    <meta property="fc:frame:image" content="https://ivxxbeats.github.io/dartgenxl-v1/previews/1.png" />
+    <meta property="fc:frame:image:aspect_ratio" content="1:1" />
+    <meta property="fc:frame:input:text" content="Enter token ID (1-9999)" />
+    <meta property="fc:frame:post_url" content="https://dartgenxl-snap.ivxxbeats.workers.dev/frame" />
+    
+    <!-- Button 1: Live Viewer -->
+    <meta property="fc:frame:button:1" content="🎨 LIVE VIEWER" />
+    <meta property="fc:frame:button:1:action" content="link" />
+    <meta property="fc:frame:button:1:target" content="https://ivxxbeats.github.io/dartgenxl-v1/?tid={tid}" />
+    
+    <!-- Button 2: Random Token -->
+    <meta property="fc:frame:button:2" content="🎲 RANDOM" />
+    <meta property="fc:frame:button:2:action" content="post" />
+    
+    <!-- Button 3: About -->
+    <meta property="fc:frame:button:3" content="⚡ ABOUT" />
+    <meta property="fc:frame:button:3:action" content="link" />
+    <meta property="fc:frame:button:3:target" content="https://ivxxbeats.github.io/dartgenxl-v1/about.html" />
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,500;14..32,600&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #0a0a0f;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Inter', 'System-ui', -apple-system, monospace;
+            font-family: 'Inter', system-ui, monospace;
             padding: 20px;
         }
-        
         .container {
             background: #111116;
             border-radius: 24px;
             padding: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
             max-width: 720px;
             width: 100%;
         }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 12px;
-            margin-bottom: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        
-        .title {
-            color: #e8e8f0;
-            font-size: 12px;
-            font-weight: 500;
-            letter-spacing: 1px;
-        }
-        
-        .version-badge {
-            font-size: 9px;
-            color: #5a5aff;
-            background: rgba(90, 90, 255, 0.1);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-family: monospace;
-        }
-        
         canvas {
             display: block;
             margin: 0 auto;
             border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             width: 100%;
             height: auto;
-            max-width: 640px;
             background: #050508;
         }
-        
-        .intensity-section {
-            margin-top: 20px;
-            background: #0d0d12;
-            border-radius: 16px;
-            padding: 14px;
-        }
-        
-        .intensity-label {
-            color: #aaaacc;
-            font-size: 11px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .intensity-bar-container {
-            background: #1a1a22;
-            border-radius: 20px;
-            height: 6px;
-            width: 100%;
-            overflow: hidden;
-        }
-        
-        .intensity-bar-fill {
-            background: linear-gradient(90deg, #5a5aff, #aa88ff);
-            width: 0%;
-            height: 100%;
-            transition: width 0.05s linear;
-            border-radius: 20px;
-        }
-        
-        .mode-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            font-size: 9px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            background: #0d0d12;
-            border-radius: 20px;
-            color: #8888aa;
-        }
-        
-        .mode-badge.live {
-            background: linear-gradient(135deg, #5a5aff20, #aa88ff20);
-            color: #aa88ff;
-        }
-        
-        .mode-badge.static {
-            background: #0d0d12;
-            color: #666688;
-        }
-        
-        .mode-badge.boot {
-            background: linear-gradient(135deg, #ffaa5520, #ff885520);
-            color: #ffaa55;
-            animation: pulse 1s ease-in-out infinite;
-        }
-        
-        /* Engine-specific badge colors */
-        .mode-badge.echo {
-            background: linear-gradient(135deg, #5a5aff20, #88aaff20);
-            color: #88aaff;
-        }
-        
-        .mode-badge.rupture {
-            background: linear-gradient(135deg, #ff555520, #ff885520);
-            color: #ff7755;
-        }
-        
-        .mode-badge.canonical {
-            background: linear-gradient(135deg, #55ffaa20, #88ffcc20);
-            color: #55ffaa;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-        
-        .traits-panel {
+        .info-panel {
             margin-top: 16px;
             background: #0d0d12;
             border-radius: 16px;
             padding: 14px;
         }
-        
-        .traits-title {
-            color: #aaaacc;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
         .traits-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 8px;
         }
-        
         .trait-item {
             font-size: 10px;
             color: #8888aa;
             font-family: monospace;
         }
-        
-        .trait-item span:first-child {
-            color: #666688;
-        }
-        
-        .trait-item span:last-child {
-            color: #e8e8f0;
-            font-weight: 500;
-        }
-        
-        .boot-indicator {
-            margin-top: 8px;
-            font-size: 8px;
-            text-align: center;
-            letter-spacing: 1px;
-            animation: pulse 1s ease-in-out infinite;
-        }
-        
-        .boot-indicator.echo {
-            color: #88aaff;
-        }
-        
-        .boot-indicator.rupture {
-            color: #ff7755;
-        }
-        
-        .boot-indicator.canonical {
-            color: #55ffaa;
-        }
-        
-        .engine-identity {
-            margin-top: 6px;
-            font-size: 7px;
-            color: #555577;
-            text-align: center;
-            letter-spacing: 0.5px;
-        }
-        
+        .trait-item span:first-child { color: #666688; }
+        .trait-item span:last-child { color: #e8e8f0; font-weight: 500; }
         .controls {
             margin-top: 16px;
             display: flex;
@@ -221,109 +80,51 @@
             justify-content: center;
             flex-wrap: wrap;
         }
-        
         input, button {
             background: #0d0d12;
             color: #e8e8f0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255,255,255,0.1);
             padding: 8px 14px;
-            font-family: 'Inter', monospace;
-            font-size: 11px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
             border-radius: 40px;
+            cursor: pointer;
         }
-        
-        input {
-            background: #0a0a0f;
-        }
-        
-        input:hover, button:hover {
-            background: #1a1a24;
-            border-color: rgba(170, 136, 255, 0.5);
-        }
-        
-        #freezeBtn.active {
+        button:hover {
             background: #1a1a24;
             border-color: #aa88ff;
-            color: #aa88ff;
         }
-        
         .status {
             margin-top: 14px;
             font-size: 9px;
             color: #666688;
             text-align: center;
-            letter-spacing: 0.5px;
         }
-        
         .cursor {
             display: inline-block;
             width: 6px;
             height: 10px;
             background: #aa88ff;
-            vertical-align: middle;
             animation: blink 1s step-end infinite;
             margin-left: 4px;
-            border-radius: 1px;
         }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-        
-        .canonical-value {
-            color: #5a5aff !important;
-        }
-        
-        .fetch-status {
-            font-size: 8px;
-            margin-left: 8px;
-        }
-        
-        .fetch-status.success {
-            color: #5a5aff;
-        }
-        
-        .fetch-status.error {
-            color: #ff6666;
-        }
-        
-        @media (max-width: 640px) {
-            .container { padding: 16px; }
-            .traits-grid { grid-template-columns: 1fr; }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+        .preview-badge {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: #ffaa5520;
+            color: #ffaa55;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-family: monospace;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="title">DART GENXL</div>
-            <div class="version-badge" id="versionBadge">v1.9.0</div>
-        </div>
-        
         <canvas id="artCanvas" width="640" height="640"></canvas>
         
-        <div class="intensity-section">
-            <div class="intensity-label">
-                <span>LIVE INTENSITY</span>
-                <span><span id="intensityPercent">0%</span><span id="fetchStatus" class="fetch-status"></span></span>
-            </div>
-            <div class="intensity-bar-container">
-                <div class="intensity-bar-fill" id="intensityBar" style="width: 0%;"></div>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                <span class="mode-badge" id="modeBadge">STATIC</span>
-                <span style="font-size: 9px; color: #666688;">PHASE: <span id="pressureStage">—</span></span>
-            </div>
-            <div id="bootIndicator" class="boot-indicator" style="display: none;"></div>
-            <div id="engineIdentity" class="engine-identity"></div>
-        </div>
-        
-        <div class="traits-panel">
-            <div class="traits-title">TOKEN TRAITS</div>
+        <div class="info-panel">
             <div class="traits-grid" id="traitsGrid">
                 <div class="trait-item"><span>ENGINE:</span> <span id="traitEngine">—</span></div>
                 <div class="trait-item"><span>VARIANT:</span> <span id="traitEngineVar">—</span></div>
@@ -332,34 +133,27 @@
                 <div class="trait-item"><span>ANCHOR:</span> <span id="traitAnchor">—</span></div>
                 <div class="trait-item"><span>DRIVER:</span> <span id="traitDriver">—</span></div>
                 <div class="trait-item"><span>SPATIAL:</span> <span id="traitSpatial">—</span></div>
-                <div class="trait-item"><span>FAILURE:</span> <span id="traitFailure">—</span></div>
-                <div class="trait-item"><span>ANOMALY:</span> <span id="traitAnomaly">—</span></div>
-                <div class="trait-item"><span>MICRO:</span> <span id="traitMicro">—</span></div>
-                <div class="trait-item"><span>EVENT SCORE:</span> <span id="traitES">—</span></div>
-                <div class="trait-item"><span>⚡ CANONICAL INT:</span> <span id="traitCanonicalInt" class="canonical-value">—</span></div>
+                <div class="trait-item"><span>CANONICAL INT:</span> <span id="traitCanonicalInt">—</span></div>
             </div>
         </div>
         
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="TOKEN ID" value="1">
-            <input type="text" id="hashInput" placeholder="TX HASH" value="0xabc123">
+            <input type="text" id="hashInput" placeholder="TX HASH (optional)" value="0xframe">
             <button id="renderBtn">⟳ RENDER</button>
             <button id="randomBtn">🎲 RANDOM</button>
-            <button id="freezeBtn">❄️ FREEZE</button>
-            <button id="testIntensityBtn">📊 TEST</button>
         </div>
         
         <div class="status" id="status">
-            SYSTEM READY <span class="cursor"></span>
+            DART GENXL READY <span class="cursor"></span>
         </div>
     </div>
+    <div class="preview-badge">⚡ PREVIEW MODE</div>
     
     <script src="engine.js"></script>
     <script>
         // ============================================================
-        // TERMINAL VIEWER - v1.9.0
-        // Engine-specific identity display
-        // Echo, Rupture, Canonical each have unique visual signatures
+        // DART GENXL FRAME v2 - Live Viewer
         // ============================================================
         
         const canvas = document.getElementById('artCanvas');
@@ -367,449 +161,92 @@
         const hashInput = document.getElementById('hashInput');
         const renderBtn = document.getElementById('renderBtn');
         const randomBtn = document.getElementById('randomBtn');
-        const freezeBtn = document.getElementById('freezeBtn');
-        const testIntensityBtn = document.getElementById('testIntensityBtn');
         const statusDiv = document.getElementById('status');
-        const versionBadge = document.getElementById('versionBadge');
-        const bootIndicator = document.getElementById('bootIndicator');
-        const engineIdentityDiv = document.getElementById('engineIdentity');
         
-        // UI Elements
-        const intensityBar = document.getElementById('intensityBar');
-        const intensityPercent = document.getElementById('intensityPercent');
-        const modeBadge = document.getElementById('modeBadge');
-        const pressureStageSpan = document.getElementById('pressureStage');
-        const fetchStatusSpan = document.getElementById('fetchStatus');
+        // Check if this is a preview (frame) request
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPreview = urlParams.get('preview') === 'true';
+        const tokenId = urlParams.get('tid') || urlParams.get('tokenId') || '1';
         
-        // Trait elements
-        const traitEngine = document.getElementById('traitEngine');
-        const traitEngineVar = document.getElementById('traitEngineVar');
-        const traitRarity = document.getElementById('traitRarity');
-        const traitArchetype = document.getElementById('traitArchetype');
-        const traitAnchor = document.getElementById('traitAnchor');
-        const traitDriver = document.getElementById('traitDriver');
-        const traitSpatial = document.getElementById('traitSpatial');
-        const traitFailure = document.getElementById('traitFailure');
-        const traitAnomaly = document.getElementById('traitAnomaly');
-        const traitMicro = document.getElementById('traitMicro');
-        const traitES = document.getElementById('traitES');
-        const traitCanonicalInt = document.getElementById('traitCanonicalInt');
-        
-        let currentSession = null;
-        let isFrozen = false;
-        let animationFrameId = null;
-        let currentCanonicalResult = null;
-        let engineStarted = false;
-        
-        let lastIntensity = 0;
-        let bootActive = false;
-        let currentEngineType = null;
-        
-        // Engine-specific boot messages and identity descriptions
-        const engineBootMessages = {
-            "Canonical": {
-                message: "◉ BREATHING FIELD ◉",
-                identity: "stable · controlled · alive",
-                trait: "breathes harmonically"
-            },
-            "Echo": {
-                message: "◉ FADING FROM TRAILS ◉",
-                identity: "lagging · echoing · smeared",
-                trait: "trails behind itself"
-            },
-            "Rupture": {
-                message: "◉ SNAPPING IN ◉",
-                identity: "unstable · fracturing · tearing",
-                trait: "shocks and fractures"
-            }
-        };
-        
-        function updateIntensityUI(intensity, isLive = true) {
-            const percent = Math.floor(intensity * 100);
-            intensityBar.style.width = `${percent}%`;
-            intensityPercent.textContent = `${percent}%`;
-            
-            let phaseText = "";
-            if (intensity > 0.82) phaseText = "ASCENDED";
-            else if (intensity > 0.60) phaseText = "AWAKENED";
-            else if (intensity > 0.35) phaseText = "AWAKENING";
-            else phaseText = "STIRRING";
-            pressureStageSpan.textContent = phaseText;
-            
-            if (isLive && currentSession) {
-                // Boot ends when intensity > 0.05 AND engine has started
-                if (bootActive && intensity > 0.05 && engineStarted) {
-                    bootActive = false;
-                    bootIndicator.style.display = 'none';
-                    // Apply engine-specific badge styling after boot
-                    applyEngineBadgeStyle(currentEngineType, false);
-                }
-                
-                if (!bootActive) {
-                    modeBadge.textContent = phaseText;
-                    modeBadge.classList.add('live');
-                    modeBadge.classList.remove('static', 'boot', 'echo', 'rupture', 'canonical');
-                    applyEngineBadgeStyle(currentEngineType, true);
-                }
-            }
+        if (isPreview) {
+            document.body.classList.add('preview-mode');
+            statusDiv.innerHTML = `PREVIEW MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
         }
         
-        function applyEngineBadgeStyle(engineType, isLive) {
-            if (!engineType) return;
-            
-            // Remove all engine-specific classes
-            modeBadge.classList.remove('echo', 'rupture', 'canonical');
-            
-            if (isLive && !bootActive) {
-                // Add engine-specific color to live badge
-                if (engineType === "Echo") {
-                    modeBadge.classList.add('echo');
-                } else if (engineType === "Rupture") {
-                    modeBadge.classList.add('rupture');
-                } else if (engineType === "Canonical") {
-                    modeBadge.classList.add('canonical');
-                }
-            }
-            
-            // Update boot indicator styling
-            bootIndicator.classList.remove('echo', 'rupture', 'canonical');
-            if (engineType === "Echo") {
-                bootIndicator.classList.add('echo');
-            } else if (engineType === "Rupture") {
-                bootIndicator.classList.add('rupture');
-            } else if (engineType === "Canonical") {
-                bootIndicator.classList.add('canonical');
-            }
-        }
+        tokenInput.value = tokenId;
         
-        function showBootIndicator(engineType) {
-            currentEngineType = engineType;
-            const info = engineBootMessages[engineType] || {
-                message: `◉ ${engineType} ENGINE ◉`,
-                identity: "initializing",
-                trait: "booting"
-            };
-            
-            bootIndicator.textContent = info.message;
-            bootIndicator.style.display = 'block';
-            engineIdentityDiv.textContent = info.identity;
-            
-            modeBadge.textContent = 'BOOTING';
-            modeBadge.classList.add('boot');
-            modeBadge.classList.remove('live', 'static', 'echo', 'rupture', 'canonical');
-            applyEngineBadgeStyle(engineType, false);
-            bootActive = true;
-            
-            // Fallback hide after fadeDuration + 100ms (safety)
-            setTimeout(() => {
-                if (bootActive) {
-                    bootActive = false;
-                    bootIndicator.style.display = 'none';
-                    if (modeBadge.classList.contains('boot')) {
-                        modeBadge.classList.remove('boot');
-                    }
-                }
-            }, 900);
-        }
-        
-        function showFetchStatus(success, value = null) {
-            if (success && value !== null) {
-                fetchStatusSpan.textContent = `✓ ${(value * 100).toFixed(0)}%`;
-                fetchStatusSpan.className = "fetch-status success";
-                setTimeout(() => {
-                    if (fetchStatusSpan.textContent.includes('✓')) {
-                        fetchStatusSpan.textContent = '';
-                        fetchStatusSpan.className = "fetch-status";
-                    }
-                }, 2000);
-            } else if (!success) {
-                fetchStatusSpan.textContent = "⚠ failed";
-                fetchStatusSpan.className = "fetch-status error";
-                setTimeout(() => {
-                    if (fetchStatusSpan.textContent.includes('failed')) {
-                        fetchStatusSpan.textContent = '';
-                        fetchStatusSpan.className = "fetch-status";
-                    }
-                }, 3000);
+        // Preview seed function (different from mint)
+        function getPreviewSeed(tokenId) {
+            const combined = `preview_snap_${tokenId}`;
+            let hash = 0;
+            for (let i = 0; i < combined.length; i++) {
+                hash = ((hash << 5) - hash) + combined.charCodeAt(i);
+                hash |= 0;
             }
-        }
-        
-        function updateModeUI(isLiveMode) {
-            if (isLiveMode && currentEngineType) {
-                const info = engineBootMessages[currentEngineType] || { identity: "booting" };
-                engineIdentityDiv.textContent = info.identity;
-                modeBadge.textContent = 'BOOTING';
-                modeBadge.classList.add('boot');
-                modeBadge.classList.remove('static', 'live', 'echo', 'rupture', 'canonical');
-                applyEngineBadgeStyle(currentEngineType, false);
-                bootActive = true;
-                updateIntensityUI(0, true);
-            } else {
-                modeBadge.textContent = 'STATIC';
-                modeBadge.classList.remove('live', 'boot', 'echo', 'rupture', 'canonical');
-                modeBadge.classList.add('static');
-                updateIntensityUI(0, false);
-                bootIndicator.style.display = 'none';
-                engineIdentityDiv.textContent = '';
-                bootActive = false;
-            }
+            return Math.abs(hash);
         }
         
         function updateTraitsUI(result) {
             if (!result || !result.traits) return;
             const t = result.traits;
-            traitEngine.textContent = t.engineType || '?';
-            traitEngineVar.textContent = t.engineVariant || '?';
-            traitRarity.textContent = t.rarityClass || '?';
-            traitArchetype.textContent = t.archetype || '?';
-            traitAnchor.textContent = t.anchorForm || '?';
-            traitDriver.textContent = t.primaryDriver || '?';
-            traitSpatial.textContent = t.spatialBehavior || '?';
-            traitFailure.textContent = t.failureMode || '?';
-            traitAnomaly.textContent = t.anomalyClass || 'None';
-            traitMicro.textContent = t.microEvent || 'None';
-            traitES.textContent = result.eventScore || '0';
-            traitCanonicalInt.textContent = result.canonicalIntensity ? result.canonicalIntensity.toFixed(3) : '—';
+            document.getElementById('traitEngine').textContent = t.engineType || '?';
+            document.getElementById('traitEngineVar').textContent = t.engineVariant || '?';
+            document.getElementById('traitRarity').textContent = t.rarityClass || '?';
+            document.getElementById('traitArchetype').textContent = t.archetype || '?';
+            document.getElementById('traitAnchor').textContent = t.anchorForm || '?';
+            document.getElementById('traitDriver').textContent = t.primaryDriver || '?';
+            document.getElementById('traitSpatial').textContent = t.spatialBehavior || '?';
+            document.getElementById('traitCanonicalInt').textContent = result.canonicalIntensity ? result.canonicalIntensity.toFixed(3) : '—';
+        }
+        
+        function renderArtwork() {
+            const tokenIdVal = tokenInput.value.trim() || '1';
+            const txHash = hashInput.value.trim() || '0xframe';
             
-            // Update engine identity description
-            if (t.engineType && engineBootMessages[t.engineType]) {
-                engineIdentityDiv.textContent = engineBootMessages[t.engineType].identity;
-            }
-        }
-        
-        function stopCurrentSession() {
-            engineStarted = false;
-            bootActive = false;
-            bootIndicator.style.display = 'none';
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-            if (currentSession && currentSession.stop) {
-                currentSession.stop();
-                currentSession = null;
-            }
-        }
-        
-        function showLoading(message = 'RENDERING...') {
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#050508';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#8888aa';
-            ctx.font = '11px "Inter", monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(message, canvas.width/2, canvas.height/2);
-        }
-        
-        async function testIntensityFetch() {
-            statusDiv.innerHTML = `TESTING INTENSITY FETCH... <span class="cursor"></span>`;
+            statusDiv.innerHTML = `RENDERING TOKEN ${tokenIdVal}... <span class="cursor"></span>`;
+            
             try {
-                const url = 'https://raw.githubusercontent.com/ivxxbeats/farcaster-intensity/main/intensity.json?t=' + Date.now();
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                let intensityValue = null;
-                if (typeof data.intensity === 'number') {
-                    intensityValue = data.intensity;
-                } else if (data.awakenedEngine && data.awakenedEngine.progression) {
-                    const prog = data.awakenedEngine.progression;
-                    if (prog === "dormant") intensityValue = 0.15;
-                    else if (prog === "stirring") intensityValue = 0.25;
-                    else if (prog === "awakening") intensityValue = 0.45;
-                    else if (prog === "awakened") intensityValue = 0.70;
-                    else if (prog === "ascended") intensityValue = 0.90;
-                    else if (prog === "base") intensityValue = 0.35;
-                    else intensityValue = 0.35;
-                }
-                
-                if (intensityValue !== null) {
-                    showFetchStatus(true, intensityValue);
-                    if (currentSession && currentSession.setLiveIntensity) {
-                        currentSession.setLiveIntensity(intensityValue);
-                    }
-                    statusDiv.innerHTML = `INTENSITY: ${(intensityValue * 100).toFixed(0)}% <span class="cursor"></span>`;
+                let result;
+                if (isPreview) {
+                    // Use preview seed for frame previews
+                    const previewSeed = getPreviewSeed(tokenIdVal);
+                    // For preview, we'd need a custom render function
+                    // Fall back to canonical for now
+                    result = DartHLGEN.renderCanonical(tokenIdVal, txHash);
                 } else {
-                    showFetchStatus(false);
-                    statusDiv.innerHTML = `INTENSITY: parse failed <span class="cursor"></span>`;
+                    result = DartHLGEN.renderCanonical(tokenIdVal, txHash);
                 }
-            } catch(e) {
-                showFetchStatus(false);
-                statusDiv.innerHTML = `FETCH FAILED: ${e.message.substring(0, 30)} <span class="cursor"></span>`;
-            }
-        }
-        
-        // FREEZE MODE
-        function renderCanonicalMode() {
-            stopCurrentSession();
-            const tokenId = tokenInput.value.trim() || '1';
-            const txHash = hashInput.value.trim() || '0xfallback';
-            
-            statusDiv.innerHTML = `FREEZE MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
-            showLoading(`LOADING TOKEN ${tokenId}...`);
-            updateModeUI(false);
-            
-            try {
-                const result = DartHLGEN.renderCanonical(tokenId, txHash);
-                if (!result || !result.pixels) throw new Error("Invalid render");
                 
-                currentCanonicalResult = result;
+                if (!result || !result.pixels) throw new Error("Invalid render");
                 DartHLGEN.drawToCanvas(canvas, result);
                 updateTraitsUI(result);
-                currentEngineType = result.traits.engineType;
-                engineIdentityDiv.textContent = engineBootMessages[currentEngineType]?.identity || "";
                 
-                statusDiv.innerHTML = `FREEZE MODE — ${result.traits.engineType} · ${result.traits.rarityClass} <span class="cursor"></span>`;
+                statusDiv.innerHTML = `TOKEN ${tokenIdVal} — ${result.traits.engineType} · ${result.traits.rarityClass} <span class="cursor"></span>`;
             } catch(e) {
                 console.error("Render error:", e);
-                showLoading('RENDER FAILED');
                 statusDiv.innerHTML = `ERROR: ${e.message.substring(0, 40)} <span class="cursor"></span>`;
             }
-        }
-        
-        function startUILoop() {
-            function updateLoop() {
-                if (currentSession && engineStarted && currentSession.getDisplayIntensity) {
-                    const intensity = currentSession.getDisplayIntensity();
-                    if (intensity !== undefined && intensity !== null) {
-                        updateIntensityUI(intensity, true);
-                        lastIntensity = intensity;
-                    }
-                }
-                animationFrameId = requestAnimationFrame(updateLoop);
-            }
-            animationFrameId = requestAnimationFrame(updateLoop);
-        }
-        
-        // LIVE MODE - Engine-specific identity
-        function startLiveMode() {
-            stopCurrentSession();
-            const tokenId = tokenInput.value.trim() || '1';
-            const txHash = hashInput.value.trim() || '0xfallback';
-            
-            statusDiv.innerHTML = `LIVE MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
-            showLoading(`BOOTING LIVE ENGINE...`);
-            
-            try {
-                const canonicalResult = DartHLGEN.renderCanonical(tokenId, txHash);
-                currentCanonicalResult = canonicalResult;
-                updateTraitsUI(canonicalResult);
-                currentEngineType = canonicalResult.traits.engineType;
-                
-                // Show engine-specific boot indicator
-                showBootIndicator(canonicalResult.traits.engineType);
-                updateModeUI(true);
-                
-                const session = DartHLGEN.createLiveSession(tokenId, txHash);
-                currentSession = session;
-                session.startAnimation(canvas);
-                
-                if (session.getDisplayIntensity) {
-                    updateIntensityUI(session.getDisplayIntensity(), true);
-                } else {
-                    updateIntensityUI(0, true);
-                }
-                
-                requestAnimationFrame(() => {
-                    engineStarted = true;
-                });
-                
-                startUILoop();
-                
-                const engineInfo = engineBootMessages[canonicalResult.traits.engineType] || { trait: "booting" };
-                statusDiv.innerHTML = `LIVE MODE — ${canonicalResult.traits.engineType} · ${engineInfo.trait} · INTENSITY RAMPING FROM 0% <span class="cursor"></span>`;
-            } catch(e) {
-                console.error("Live mode error:", e);
-                showLoading('LIVE MODE FAILED');
-                statusDiv.innerHTML = `ERROR: ${e.message.substring(0, 40)} <span class="cursor"></span>`;
-                updateModeUI(false);
-            }
-        }
-        
-        function toggleFreeze() {
-            isFrozen = !isFrozen;
-            const url = new URL(window.location);
-            
-            if (isFrozen) {
-                url.searchParams.set('freeze', 'true');
-                freezeBtn.classList.add('active');
-                freezeBtn.textContent = '❄️ FREEZE (ON)';
-                renderCanonicalMode();
-            } else {
-                url.searchParams.delete('freeze');
-                freezeBtn.classList.remove('active');
-                freezeBtn.textContent = '❄️ FREEZE';
-                startLiveMode();
-            }
-            window.history.pushState({}, '', url);
         }
         
         function randomToken() {
             const randomId = Math.floor(Math.random() * 9999) + 1;
-            const randomHash = '0x' + Math.random().toString(36).substring(2, 10);
             tokenInput.value = randomId;
-            hashInput.value = randomHash;
+            renderArtwork();
             
+            // Update URL without reload
             const url = new URL(window.location);
             url.searchParams.set('tid', randomId);
-            url.searchParams.set('h', randomHash);
             window.history.pushState({}, '', url);
-            
-            statusDiv.innerHTML = `RANDOM TOKEN — ID ${randomId} <span class="cursor"></span>`;
-            
-            if (isFrozen) {
-                renderCanonicalMode();
-            } else {
-                startLiveMode();
-            }
         }
         
-        function init() {
-            const params = new URLSearchParams(window.location.search);
-            const tid = params.get('tid') || params.get('tokenId');
-            const h = params.get('h') || params.get('txHash');
-            const freezeParam = params.get('freeze') === 'true';
-            
-            if (tid) tokenInput.value = tid;
-            if (h) hashInput.value = h;
-            
-            isFrozen = freezeParam;
-            
-            if (isFrozen) {
-                freezeBtn.classList.add('active');
-                freezeBtn.textContent = '❄️ FREEZE (ON)';
-                renderCanonicalMode();
-            } else {
-                freezeBtn.classList.remove('active');
-                freezeBtn.textContent = '❄️ FREEZE';
-                startLiveMode();
-            }
-        }
-        
-        renderBtn.onclick = () => { if (isFrozen) renderCanonicalMode(); else startLiveMode(); };
+        renderBtn.onclick = renderArtwork;
         randomBtn.onclick = randomToken;
-        freezeBtn.onclick = toggleFreeze;
-        testIntensityBtn.onclick = testIntensityFetch;
+        tokenInput.onkeypress = (e) => { if (e.key === 'Enter') renderArtwork(); };
         
-        function waitForEngine() {
-            if (typeof DartHLGEN !== 'undefined') {
-                console.log("Engine loaded v" + DartHLGEN.version);
-                versionBadge.textContent = `v${DartHLGEN.version}`;
-                init();
-            } else {
-                setTimeout(waitForEngine, 100);
-            }
-        }
+        // Initial render
+        renderArtwork();
         
-        waitForEngine();
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight') randomToken();
-            if (e.key === 'r' || e.key === 'R') { if (isFrozen) renderCanonicalMode(); else startLiveMode(); }
-            if (e.key === 'f' || e.key === 'F') toggleFreeze();
-            if (e.key === 't' || e.key === 'T') testIntensityFetch();
-        });
-        
-        console.log("Terminal Viewer Ready — v1.9.0, engine-specific identity display");
+        console.log("Dart GenXL Frame v2 Ready - Preview mode:", isPreview);
     </script>
 </body>
 </html>
