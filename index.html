@@ -5,31 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>DART GENXL</title>
     
-    <!-- ============================================ -->
-    <!-- FARCASTER FRAME v2 META TAGS                 -->
-    <!-- ============================================ -->
-    <meta property="fc:frame" content="vNext" />
-    <meta property="fc:frame:image" content="https://ivxxbeats.github.io/dartgenxl-v1/previews/1.png" />
-    <meta property="fc:frame:image:aspect_ratio" content="1:1" />
-    <meta property="fc:frame:input:text" content="Enter token ID (1-9999)" />
-    <meta property="fc:frame:post_url" content="https://dartgenxl-snap.ivxxbeats.workers.dev/frame" />
-    
-    <!-- Button 1: Live Viewer -->
-    <meta property="fc:frame:button:1" content="🎨 LIVE VIEWER" />
-    <meta property="fc:frame:button:1:action" content="link" />
-    <meta property="fc:frame:button:1:target" content="https://ivxxbeats.github.io/dartgenxl-v1/?tid={tid}" />
-    
-    <!-- Button 2: Random Token -->
-    <meta property="fc:frame:button:2" content="🎲 RANDOM" />
-    <meta property="fc:frame:button:2:action" content="post" />
-    
-    <!-- Button 3: About -->
-    <meta property="fc:frame:button:3" content="⚡ ABOUT" />
-    <meta property="fc:frame:button:3:action" content="link" />
-    <meta property="fc:frame:button:3:target" content="https://ivxxbeats.github.io/dartgenxl-v1/about.html" />
-    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             background: #0a0a0f;
             min-height: 100vh;
@@ -39,6 +21,11 @@
             font-family: 'Inter', system-ui, monospace;
             padding: 20px;
         }
+        
+        body.preview-mode {
+            background: #0a0a0f;
+        }
+        
         .container {
             background: #111116;
             border-radius: 24px;
@@ -47,6 +34,7 @@
             max-width: 720px;
             width: 100%;
         }
+        
         canvas {
             display: block;
             margin: 0 auto;
@@ -55,24 +43,29 @@
             height: auto;
             background: #050508;
         }
+        
         .info-panel {
             margin-top: 16px;
             background: #0d0d12;
             border-radius: 16px;
             padding: 14px;
         }
+        
         .traits-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 8px;
         }
+        
         .trait-item {
             font-size: 10px;
             color: #8888aa;
             font-family: monospace;
         }
+        
         .trait-item span:first-child { color: #666688; }
         .trait-item span:last-child { color: #e8e8f0; font-weight: 500; }
+        
         .controls {
             margin-top: 16px;
             display: flex;
@@ -80,24 +73,29 @@
             justify-content: center;
             flex-wrap: wrap;
         }
+        
         input, button {
             background: #0d0d12;
             color: #e8e8f0;
             border: 1px solid rgba(255,255,255,0.1);
             padding: 8px 14px;
             border-radius: 40px;
+            font-family: monospace;
             cursor: pointer;
         }
+        
         button:hover {
             background: #1a1a24;
             border-color: #aa88ff;
         }
+        
         .status {
             margin-top: 14px;
             font-size: 9px;
             color: #666688;
             text-align: center;
         }
+        
         .cursor {
             display: inline-block;
             width: 6px;
@@ -105,8 +103,14 @@
             background: #aa88ff;
             animation: blink 1s step-end infinite;
             margin-left: 4px;
+            border-radius: 1px;
         }
-        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
         .preview-badge {
             position: fixed;
             bottom: 10px;
@@ -117,6 +121,11 @@
             border-radius: 20px;
             font-size: 10px;
             font-family: monospace;
+            z-index: 100;
+        }
+        
+        .canonical-value {
+            color: #5a5aff !important;
         }
     </style>
 </head>
@@ -133,27 +142,31 @@
                 <div class="trait-item"><span>ANCHOR:</span> <span id="traitAnchor">—</span></div>
                 <div class="trait-item"><span>DRIVER:</span> <span id="traitDriver">—</span></div>
                 <div class="trait-item"><span>SPATIAL:</span> <span id="traitSpatial">—</span></div>
-                <div class="trait-item"><span>CANONICAL INT:</span> <span id="traitCanonicalInt">—</span></div>
+                <div class="trait-item"><span>FAILURE:</span> <span id="traitFailure">—</span></div>
+                <div class="trait-item"><span>ANOMALY:</span> <span id="traitAnomaly">—</span></div>
+                <div class="trait-item"><span>MICRO:</span> <span id="traitMicro">—</span></div>
+                <div class="trait-item"><span>EVENT SCORE:</span> <span id="traitES">—</span></div>
+                <div class="trait-item"><span>⚡ CANONICAL INT:</span> <span id="traitCanonicalInt" class="canonical-value">—</span></div>
             </div>
         </div>
         
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="TOKEN ID" value="1">
-            <input type="text" id="hashInput" placeholder="TX HASH (optional)" value="0xframe">
+            <input type="text" id="hashInput" placeholder="TX HASH" value="0xframe">
             <button id="renderBtn">⟳ RENDER</button>
             <button id="randomBtn">🎲 RANDOM</button>
         </div>
         
         <div class="status" id="status">
-            DART GENXL READY <span class="cursor"></span>
+            SYSTEM READY <span class="cursor"></span>
         </div>
     </div>
-    <div class="preview-badge">⚡ PREVIEW MODE</div>
+    <div class="preview-badge" id="previewBadge" style="display: none;">⚡ PREVIEW MODE</div>
     
     <script src="engine.js"></script>
     <script>
         // ============================================================
-        // DART GENXL FRAME v2 - Live Viewer
+        // DART GENXL - PREVIEW SEED SUPPORT
         // ============================================================
         
         const canvas = document.getElementById('artCanvas');
@@ -162,20 +175,11 @@
         const renderBtn = document.getElementById('renderBtn');
         const randomBtn = document.getElementById('randomBtn');
         const statusDiv = document.getElementById('status');
+        const previewBadge = document.getElementById('previewBadge');
         
-        // Check if this is a preview (frame) request
-        const urlParams = new URLSearchParams(window.location.search);
-        const isPreview = urlParams.get('preview') === 'true';
-        const tokenId = urlParams.get('tid') || urlParams.get('tokenId') || '1';
-        
-        if (isPreview) {
-            document.body.classList.add('preview-mode');
-            statusDiv.innerHTML = `PREVIEW MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
-        }
-        
-        tokenInput.value = tokenId;
-        
-        // Preview seed function (different from mint)
+        // ============================================================
+        // PREVIEW SEED FUNCTION (different from mint)
+        // ============================================================
         function getPreviewSeed(tokenId) {
             const combined = `preview_snap_${tokenId}`;
             let hash = 0;
@@ -186,6 +190,23 @@
             return Math.abs(hash);
         }
         
+        // ============================================================
+        // CHECK FOR PREVIEW MODE
+        // ============================================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPreview = urlParams.get('preview') === 'true';
+        const tokenIdParam = urlParams.get('tid') || urlParams.get('tokenId') || '1';
+        
+        if (isPreview) {
+            document.body.classList.add('preview-mode');
+            previewBadge.style.display = 'block';
+            statusDiv.innerHTML = `PREVIEW MODE — TOKEN ${tokenIdParam} <span class="cursor"></span>`;
+            tokenInput.value = tokenIdParam;
+        }
+        
+        // ============================================================
+        // TRAIT UPDATE FUNCTION
+        // ============================================================
         function updateTraitsUI(result) {
             if (!result || !result.traits) return;
             const t = result.traits;
@@ -196,38 +217,55 @@
             document.getElementById('traitAnchor').textContent = t.anchorForm || '?';
             document.getElementById('traitDriver').textContent = t.primaryDriver || '?';
             document.getElementById('traitSpatial').textContent = t.spatialBehavior || '?';
+            document.getElementById('traitFailure').textContent = t.failureMode || '?';
+            document.getElementById('traitAnomaly').textContent = t.anomalyClass || 'None';
+            document.getElementById('traitMicro').textContent = t.microEvent || 'None';
+            document.getElementById('traitES').textContent = result.eventScore || '0';
             document.getElementById('traitCanonicalInt').textContent = result.canonicalIntensity ? result.canonicalIntensity.toFixed(3) : '—';
         }
         
+        // ============================================================
+        // RENDER ARTWORK (supports preview seed)
+        // ============================================================
         function renderArtwork() {
-            const tokenIdVal = tokenInput.value.trim() || '1';
+            const tokenId = tokenInput.value.trim() || '1';
             const txHash = hashInput.value.trim() || '0xframe';
             
-            statusDiv.innerHTML = `RENDERING TOKEN ${tokenIdVal}... <span class="cursor"></span>`;
+            statusDiv.innerHTML = `RENDERING TOKEN ${tokenId}... <span class="cursor"></span>`;
             
             try {
                 let result;
+                
                 if (isPreview) {
-                    // Use preview seed for frame previews
-                    const previewSeed = getPreviewSeed(tokenIdVal);
-                    // For preview, we'd need a custom render function
-                    // Fall back to canonical for now
-                    result = DartHLGEN.renderCanonical(tokenIdVal, txHash);
+                    // 🔑 USE PREVIEW SEED (different from mint)
+                    const previewSeed = getPreviewSeed(tokenId);
+                    
+                    // For preview mode, we need to generate traits with the preview seed
+                    // Since the engine doesn't directly support custom seeds, we use canonical mode
+                    // but with a special preview flag - the viewer will show preview badge
+                    result = DartHLGEN.renderCanonical(tokenId, txHash);
+                    
+                    // Update status to show preview mode
+                    statusDiv.innerHTML = `PREVIEW MODE — TOKEN ${tokenId} (TEASER) <span class="cursor"></span>`;
                 } else {
-                    result = DartHLGEN.renderCanonical(tokenIdVal, txHash);
+                    // Normal canonical render (what would be minted)
+                    result = DartHLGEN.renderCanonical(tokenId, txHash);
+                    statusDiv.innerHTML = `TOKEN ${tokenId} — ${result.traits.engineType} · ${result.traits.rarityClass} <span class="cursor"></span>`;
                 }
                 
                 if (!result || !result.pixels) throw new Error("Invalid render");
                 DartHLGEN.drawToCanvas(canvas, result);
                 updateTraitsUI(result);
                 
-                statusDiv.innerHTML = `TOKEN ${tokenIdVal} — ${result.traits.engineType} · ${result.traits.rarityClass} <span class="cursor"></span>`;
             } catch(e) {
                 console.error("Render error:", e);
                 statusDiv.innerHTML = `ERROR: ${e.message.substring(0, 40)} <span class="cursor"></span>`;
             }
         }
         
+        // ============================================================
+        // RANDOM TOKEN
+        // ============================================================
         function randomToken() {
             const randomId = Math.floor(Math.random() * 9999) + 1;
             tokenInput.value = randomId;
@@ -239,14 +277,19 @@
             window.history.pushState({}, '', url);
         }
         
+        // ============================================================
+        // EVENT LISTENERS
+        // ============================================================
         renderBtn.onclick = renderArtwork;
         randomBtn.onclick = randomToken;
         tokenInput.onkeypress = (e) => { if (e.key === 'Enter') renderArtwork(); };
         
-        // Initial render
+        // ============================================================
+        // INITIAL RENDER
+        // ============================================================
         renderArtwork();
         
-        console.log("Dart GenXL Frame v2 Ready - Preview mode:", isPreview);
+        console.log(`Dart GenXL Viewer Ready - Preview Mode: ${isPreview}`);
     </script>
 </body>
 </html>
