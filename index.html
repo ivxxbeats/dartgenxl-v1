@@ -5,14 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>DART GENXL // THE ART OF FARCASTER</title>
     <style>
+        /* ... ALL EXISTING CSS REMAINS EXACTLY THE SAME ... */
         @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,500;14..32,600&display=swap');
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #0a0a0f;
             min-height: 100vh;
@@ -22,7 +18,6 @@
             font-family: 'Inter', 'System-ui', -apple-system, monospace;
             padding: 20px;
         }
-        
         .container {
             background: #111116;
             border-radius: 24px;
@@ -31,7 +26,6 @@
             max-width: 720px;
             width: 100%;
         }
-        
         .header {
             display: flex;
             justify-content: space-between;
@@ -40,257 +34,120 @@
             margin-bottom: 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
-        
-        .title {
-            color: #e8e8f0;
-            font-size: 12px;
-            font-weight: 500;
-            letter-spacing: 1px;
-        }
-        
+        .title { color: #e8e8f0; font-size: 12px; font-weight: 500; letter-spacing: 1px; }
         .version-badge {
-            font-size: 9px;
-            color: #5a5aff;
+            font-size: 9px; color: #5a5aff;
             background: rgba(90, 90, 255, 0.1);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-family: monospace;
+            padding: 4px 10px; border-radius: 20px; font-family: monospace;
         }
-        
         canvas {
-            display: block;
-            margin: 0 auto;
+            display: block; margin: 0 auto;
             border-radius: 16px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            height: auto;
-            max-width: 640px;
+            width: 100%; height: auto; max-width: 640px;
             background: #050508;
         }
-        
         .intensity-section {
-            margin-top: 20px;
-            background: #0d0d12;
-            border-radius: 16px;
-            padding: 14px;
+            margin-top: 20px; background: #0d0d12;
+            border-radius: 16px; padding: 14px;
         }
-        
         .intensity-label {
-            color: #aaaacc;
-            font-size: 11px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
+            color: #aaaacc; font-size: 11px; font-weight: 500;
+            margin-bottom: 8px; display: flex; justify-content: space-between;
         }
-        
         .intensity-bar-container {
-            background: #1a1a22;
-            border-radius: 20px;
-            height: 6px;
-            width: 100%;
-            overflow: hidden;
+            background: #1a1a22; border-radius: 20px;
+            height: 6px; width: 100%; overflow: hidden;
         }
-        
         .intensity-bar-fill {
             background: linear-gradient(90deg, #5a5aff, #aa88ff);
-            width: 0%;
-            height: 100%;
-            transition: width 0.05s linear;
-            border-radius: 20px;
+            width: 0%; height: 100%;
+            transition: width 0.05s linear; border-radius: 20px;
         }
-        
         .mode-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            font-size: 9px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            background: #0d0d12;
-            border-radius: 20px;
-            color: #8888aa;
+            display: inline-block; padding: 4px 10px; font-size: 9px;
+            font-weight: 600; letter-spacing: 0.5px;
+            background: #0d0d12; border-radius: 20px; color: #8888aa;
         }
-        
-        .mode-badge.live {
-            background: linear-gradient(135deg, #5a5aff20, #aa88ff20);
-            color: #aa88ff;
-        }
-        
-        .mode-badge.static {
-            background: #0d0d12;
-            color: #666688;
-        }
-        
-        .mode-badge.boot {
-            background: linear-gradient(135deg, #ffaa5520, #ff885520);
-            color: #ffaa55;
-            animation: pulse 1s ease-in-out infinite;
-        }
-        
-        /* Engine-specific badge colors */
-        .mode-badge.echo {
-            background: linear-gradient(135deg, #5a5aff20, #88aaff20);
-            color: #88aaff;
-        }
-        
-        .mode-badge.rupture {
-            background: linear-gradient(135deg, #ff555520, #ff885520);
-            color: #ff7755;
-        }
-        
-        .mode-badge.canonical {
-            background: linear-gradient(135deg, #55ffaa20, #88ffcc20);
-            color: #55ffaa;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-        
-        .traits-panel {
-            margin-top: 16px;
-            background: #0d0d12;
-            border-radius: 16px;
-            padding: 14px;
-        }
-        
-        .traits-title {
-            color: #aaaacc;
-            font-size: 10px;
-            font-weight: 600;
+        .mode-badge.live { background: linear-gradient(135deg, #5a5aff20, #aa88ff20); color: #aa88ff; }
+        .mode-badge.static { background: #0d0d12; color: #666688; }
+        .mode-badge.boot { background: linear-gradient(135deg, #ffaa5520, #ff885520); color: #ffaa55; animation: pulse 1s ease-in-out infinite; }
+        .mode-badge.echo { background: linear-gradient(135deg, #5a5aff20, #88aaff20); color: #88aaff; }
+        .mode-badge.rupture { background: linear-gradient(135deg, #ff555520, #ff885520); color: #ff7755; }
+        .mode-badge.canonical { background: linear-gradient(135deg, #55ffaa20, #88ffcc20); color: #55ffaa; }
+        @keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+        .token-id-display {
+            margin-top: 8px; text-align: center;
+            font-size: 10px; color: #5a5aff; font-family: monospace;
             letter-spacing: 1px;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-        
+        .traits-panel {
+            margin-top: 16px; background: #0d0d12;
+            border-radius: 16px; padding: 14px;
+        }
+        .traits-title {
+            color: #aaaacc; font-size: 10px; font-weight: 600;
+            letter-spacing: 1px; margin-bottom: 12px;
+            padding-bottom: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
         .traits-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 8px;
         }
-        
-        .trait-item {
-            font-size: 10px;
-            color: #8888aa;
-            font-family: monospace;
-        }
-        
-        .trait-item span:first-child {
-            color: #666688;
-        }
-        
-        .trait-item span:last-child {
-            color: #e8e8f0;
-            font-weight: 500;
-        }
-        
+        .trait-item { font-size: 10px; color: #8888aa; font-family: monospace; }
+        .trait-item span:first-child { color: #666688; }
+        .trait-item span:last-child { color: #e8e8f0; font-weight: 500; }
         .boot-indicator {
-            margin-top: 8px;
-            font-size: 8px;
-            text-align: center;
-            letter-spacing: 1px;
-            animation: pulse 1s ease-in-out infinite;
+            margin-top: 8px; font-size: 8px; text-align: center;
+            letter-spacing: 1px; animation: pulse 1s ease-in-out infinite;
         }
-        
-        .boot-indicator.echo {
-            color: #88aaff;
-        }
-        
-        .boot-indicator.rupture {
-            color: #ff7755;
-        }
-        
-        .boot-indicator.canonical {
-            color: #55ffaa;
-        }
-        
+        .boot-indicator.echo { color: #88aaff; }
+        .boot-indicator.rupture { color: #ff7755; }
+        .boot-indicator.canonical { color: #55ffaa; }
         .engine-identity {
-            margin-top: 6px;
-            font-size: 7px;
-            color: #555577;
-            text-align: center;
-            letter-spacing: 0.5px;
+            margin-top: 6px; font-size: 7px; color: #555577;
+            text-align: center; letter-spacing: 0.5px;
         }
-        
         .controls {
-            margin-top: 16px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
+            margin-top: 16px; display: flex; gap: 10px;
+            justify-content: center; flex-wrap: wrap;
         }
-        
         input, button {
-            background: #0d0d12;
-            color: #e8e8f0;
+            background: #0d0d12; color: #e8e8f0;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 8px 14px;
-            font-family: 'Inter', monospace;
-            font-size: 11px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 40px;
+            padding: 8px 14px; font-family: 'Inter', monospace;
+            font-size: 11px; font-weight: 500; cursor: pointer;
+            transition: all 0.2s; border-radius: 40px;
         }
-        
-        input {
-            background: #0a0a0f;
-        }
-        
+        input { background: #0a0a0f; }
         input:hover, button:hover {
             background: #1a1a24;
             border-color: rgba(170, 136, 255, 0.5);
         }
-        
         #freezeBtn.active {
             background: #1a1a24;
             border-color: #aa88ff;
             color: #aa88ff;
         }
-        
         .status {
-            margin-top: 14px;
-            font-size: 9px;
-            color: #666688;
-            text-align: center;
-            letter-spacing: 0.5px;
+            margin-top: 14px; font-size: 9px; color: #666688;
+            text-align: center; letter-spacing: 0.5px;
         }
-        
         .cursor {
-            display: inline-block;
-            width: 6px;
-            height: 10px;
-            background: #aa88ff;
-            vertical-align: middle;
-            animation: blink 1s step-end infinite;
-            margin-left: 4px;
-            border-radius: 1px;
+            display: inline-block; width: 6px; height: 10px;
+            background: #aa88ff; vertical-align: middle;
+            animation: blink 1s step-end infinite; margin-left: 4px; border-radius: 1px;
         }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .canonical-value { color: #5a5aff !important; }
+        .fetch-status { font-size: 8px; margin-left: 8px; }
+        .fetch-status.success { color: #5a5aff; }
+        .fetch-status.error { color: #ff6666; }
+        .seed-display {
+            font-size: 8px; color: #555577; margin-top: 4px;
+            text-align: center; font-family: monospace;
         }
-        
-        .canonical-value {
-            color: #5a5aff !important;
-        }
-        
-        .fetch-status {
-            font-size: 8px;
-            margin-left: 8px;
-        }
-        
-        .fetch-status.success {
-            color: #5a5aff;
-        }
-        
-        .fetch-status.error {
-            color: #ff6666;
-        }
-        
         @media (max-width: 640px) {
             .container { padding: 16px; }
             .traits-grid { grid-template-columns: 1fr; }
@@ -301,10 +158,18 @@
     <div class="container">
         <div class="header">
             <div class="title">DART GENXL</div>
-            <div class="version-badge" id="versionBadge">v1.9.0</div>
+            <div class="version-badge" id="versionBadge">v1.9.1</div>
         </div>
         
         <canvas id="artCanvas" width="640" height="640"></canvas>
+        
+        <!-- ✨ NEW: Token ID and Seed display (minted tokens) -->
+        <div class="token-id-display" id="tokenIdDisplay" style="display: none;">
+            TOKEN #<span id="displayTokenId">—</span>
+        </div>
+        <div class="seed-display" id="seedDisplay" style="display: none;">
+            SEED: <span id="displaySeed">—</span>
+        </div>
         
         <div class="intensity-section">
             <div class="intensity-label">
@@ -342,7 +207,7 @@
         
         <div class="controls">
             <input type="text" id="tokenInput" placeholder="TOKEN ID" value="1">
-            <input type="text" id="hashInput" placeholder="TX HASH" value="0xabc123">
+            <input type="text" id="seedInput" placeholder="SEED (numeric)" value="12345">
             <button id="renderBtn">⟳ RENDER</button>
             <button id="randomBtn">🎲 RANDOM</button>
             <button id="freezeBtn">❄️ FREEZE</button>
@@ -357,14 +222,14 @@
     <script src="engine.js"></script>
     <script>
         // ============================================================
-        // TERMINAL VIEWER - v1.9.0
-        // Engine-specific identity display
-        // Echo, Rupture, Canonical each have unique visual signatures
+        // TERMINAL VIEWER - v1.9.1 (Seed-Native)
+        // Now works with seed directly — no txHash required for minted tokens
+        // Reads ?tokenId=X from URL for Farcaster mini-app integration
         // ============================================================
         
         const canvas = document.getElementById('artCanvas');
         const tokenInput = document.getElementById('tokenInput');
-        const hashInput = document.getElementById('hashInput');
+        const seedInput = document.getElementById('seedInput');
         const renderBtn = document.getElementById('renderBtn');
         const randomBtn = document.getElementById('randomBtn');
         const freezeBtn = document.getElementById('freezeBtn');
@@ -373,6 +238,12 @@
         const versionBadge = document.getElementById('versionBadge');
         const bootIndicator = document.getElementById('bootIndicator');
         const engineIdentityDiv = document.getElementById('engineIdentity');
+        
+        // ✨ NEW: Token/seed display elements
+        const tokenIdDisplay = document.getElementById('tokenIdDisplay');
+        const displayTokenId = document.getElementById('displayTokenId');
+        const seedDisplay = document.getElementById('seedDisplay');
+        const displaySeed = document.getElementById('displaySeed');
         
         // UI Elements
         const intensityBar = document.getElementById('intensityBar');
@@ -400,12 +271,14 @@
         let animationFrameId = null;
         let currentCanonicalResult = null;
         let engineStarted = false;
-        
         let lastIntensity = 0;
         let bootActive = false;
         let currentEngineType = null;
         
-        // Engine-specific boot messages and identity descriptions
+        // ✨ NEW: Track if we're viewing a minted token (from URL)
+        let isMintedToken = false;
+        
+        // Engine-specific boot messages and identity descriptions (unchanged)
         const engineBootMessages = {
             "Canonical": {
                 message: "◉ BREATHING FIELD ◉",
@@ -424,6 +297,20 @@
             }
         };
         
+        // ✨ NEW: Read seed from contract for a given tokenId
+        // This function should be replaced with your actual contract call
+        async function fetchSeedFromContract(tokenId) {
+            // TODO: Replace with actual contract call on Base
+            // const seed = await contract.tokenSeeds(tokenId);
+            // return seed;
+            
+            // For now, derive a deterministic seed from tokenId as fallback
+            // In production, this MUST read from your smart contract
+            const combined = `dart_genxl_contract_${tokenId}_base`;
+            const hash = DartHLGEN.getSeed(tokenId, combined);
+            return hash;
+        }
+        
         function updateIntensityUI(intensity, isLive = true) {
             const percent = Math.floor(intensity * 100);
             intensityBar.style.width = `${percent}%`;
@@ -437,11 +324,9 @@
             pressureStageSpan.textContent = phaseText;
             
             if (isLive && currentSession) {
-                // Boot ends when intensity > 0.05 AND engine has started
                 if (bootActive && intensity > 0.05 && engineStarted) {
                     bootActive = false;
                     bootIndicator.style.display = 'none';
-                    // Apply engine-specific badge styling after boot
                     applyEngineBadgeStyle(currentEngineType, false);
                 }
                 
@@ -456,30 +341,16 @@
         
         function applyEngineBadgeStyle(engineType, isLive) {
             if (!engineType) return;
-            
-            // Remove all engine-specific classes
             modeBadge.classList.remove('echo', 'rupture', 'canonical');
-            
             if (isLive && !bootActive) {
-                // Add engine-specific color to live badge
-                if (engineType === "Echo") {
-                    modeBadge.classList.add('echo');
-                } else if (engineType === "Rupture") {
-                    modeBadge.classList.add('rupture');
-                } else if (engineType === "Canonical") {
-                    modeBadge.classList.add('canonical');
-                }
+                if (engineType === "Echo") modeBadge.classList.add('echo');
+                else if (engineType === "Rupture") modeBadge.classList.add('rupture');
+                else if (engineType === "Canonical") modeBadge.classList.add('canonical');
             }
-            
-            // Update boot indicator styling
             bootIndicator.classList.remove('echo', 'rupture', 'canonical');
-            if (engineType === "Echo") {
-                bootIndicator.classList.add('echo');
-            } else if (engineType === "Rupture") {
-                bootIndicator.classList.add('rupture');
-            } else if (engineType === "Canonical") {
-                bootIndicator.classList.add('canonical');
-            }
+            if (engineType === "Echo") bootIndicator.classList.add('echo');
+            else if (engineType === "Rupture") bootIndicator.classList.add('rupture');
+            else if (engineType === "Canonical") bootIndicator.classList.add('canonical');
         }
         
         function showBootIndicator(engineType) {
@@ -489,25 +360,19 @@
                 identity: "initializing",
                 trait: "booting"
             };
-            
             bootIndicator.textContent = info.message;
             bootIndicator.style.display = 'block';
             engineIdentityDiv.textContent = info.identity;
-            
             modeBadge.textContent = 'BOOTING';
             modeBadge.classList.add('boot');
             modeBadge.classList.remove('live', 'static', 'echo', 'rupture', 'canonical');
             applyEngineBadgeStyle(engineType, false);
             bootActive = true;
-            
-            // Fallback hide after fadeDuration + 100ms (safety)
             setTimeout(() => {
                 if (bootActive) {
                     bootActive = false;
                     bootIndicator.style.display = 'none';
-                    if (modeBadge.classList.contains('boot')) {
-                        modeBadge.classList.remove('boot');
-                    }
+                    if (modeBadge.classList.contains('boot')) modeBadge.classList.remove('boot');
                 }
             }, 900);
         }
@@ -570,10 +435,21 @@
             traitMicro.textContent = t.microEvent || 'None';
             traitES.textContent = result.eventScore || '0';
             traitCanonicalInt.textContent = result.canonicalIntensity ? result.canonicalIntensity.toFixed(3) : '—';
-            
-            // Update engine identity description
             if (t.engineType && engineBootMessages[t.engineType]) {
                 engineIdentityDiv.textContent = engineBootMessages[t.engineType].identity;
+            }
+        }
+        
+        // ✨ NEW: Update token/seed display for minted tokens
+        function updateMintedDisplay(tokenId, seed) {
+            if (isMintedToken) {
+                tokenIdDisplay.style.display = 'block';
+                seedDisplay.style.display = 'block';
+                displayTokenId.textContent = tokenId;
+                displaySeed.textContent = seed.toString();
+            } else {
+                tokenIdDisplay.style.display = 'none';
+                seedDisplay.style.display = 'none';
             }
         }
         
@@ -602,12 +478,12 @@
         }
         
         async function testIntensityFetch() {
+            // ... EXACTLY SAME AS ORIGINAL ...
             statusDiv.innerHTML = `TESTING INTENSITY FETCH... <span class="cursor"></span>`;
             try {
                 const url = 'https://raw.githubusercontent.com/ivxxbeats/farcaster-intensity/main/intensity.json?t=' + Date.now();
                 const response = await fetch(url);
                 const data = await response.json();
-                
                 let intensityValue = null;
                 if (typeof data.intensity === 'number') {
                     intensityValue = data.intensity;
@@ -621,7 +497,6 @@
                     else if (prog === "base") intensityValue = 0.35;
                     else intensityValue = 0.35;
                 }
-                
                 if (intensityValue !== null) {
                     showFetchStatus(true, intensityValue);
                     if (currentSession && currentSession.setLiveIntensity) {
@@ -638,18 +513,33 @@
             }
         }
         
-        // FREEZE MODE
+        // ✨ REWRITTEN: FREEZE MODE — Now uses seed-native rendering
         function renderCanonicalMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value.trim() || '1';
-            const txHash = hashInput.value.trim() || '0xfallback';
+            const seedInput_val = seedInput.value.trim();
+            
+            let seed;
+            if (seedInput_val) {
+                // Use manually entered seed
+                seed = parseInt(seedInput_val, 10) || (DartHLGEN.getSeed(tokenId, 'default_fallback'));
+            } else if (isMintedToken) {
+                // For minted tokens without manual seed, we need to read from contract
+                // This will be async, but for now we use the fallback
+                seed = DartHLGEN.getSeed(tokenId, 'default_fallback');
+            } else {
+                // Explorer mode: derive from tokenId alone
+                seed = DartHLGEN.getSeed(tokenId, 'default_fallback');
+            }
             
             statusDiv.innerHTML = `FREEZE MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
             showLoading(`LOADING TOKEN ${tokenId}...`);
             updateModeUI(false);
+            updateMintedDisplay(tokenId, seed);
             
             try {
-                const result = DartHLGEN.renderCanonical(tokenId, txHash);
+                // ✨ Use seed-native render instead of renderCanonical
+                const result = DartHLGEN.renderFromSeed(seed, tokenId);
                 if (!result || !result.pixels) throw new Error("Invalid render");
                 
                 currentCanonicalResult = result;
@@ -680,26 +570,42 @@
             animationFrameId = requestAnimationFrame(updateLoop);
         }
         
-        // LIVE MODE - Engine-specific identity
-        function startLiveMode() {
+        // ✨ REWRITTEN: LIVE MODE — Uses seed-native rendering
+        async function startLiveMode() {
             stopCurrentSession();
             const tokenId = tokenInput.value.trim() || '1';
-            const txHash = hashInput.value.trim() || '0xfallback';
+            const seedInput_val = seedInput.value.trim();
+            
+            let seed;
+            if (seedInput_val) {
+                seed = parseInt(seedInput_val, 10) || (DartHLGEN.getSeed(tokenId, 'default_fallback'));
+            } else if (isMintedToken) {
+                // For minted tokens, read seed from contract
+                showLoading(`READING SEED FROM CONTRACT...`);
+                seed = await fetchSeedFromContract(tokenId);
+                seedInput.value = seed; // Populate seed field
+            } else {
+                seed = DartHLGEN.getSeed(tokenId, 'default_fallback');
+            }
             
             statusDiv.innerHTML = `LIVE MODE — TOKEN ${tokenId} <span class="cursor"></span>`;
             showLoading(`BOOTING LIVE ENGINE...`);
             
             try {
-                const canonicalResult = DartHLGEN.renderCanonical(tokenId, txHash);
+                // ✨ Use seed-native render as base
+                const canonicalResult = DartHLGEN.renderFromSeed(seed, tokenId);
                 currentCanonicalResult = canonicalResult;
                 updateTraitsUI(canonicalResult);
                 currentEngineType = canonicalResult.traits.engineType;
+                updateMintedDisplay(tokenId, seed);
                 
-                // Show engine-specific boot indicator
                 showBootIndicator(canonicalResult.traits.engineType);
                 updateModeUI(true);
                 
-                const session = DartHLGEN.createLiveSession(tokenId, txHash);
+                // Create live session — the live session still needs txHash for backward compat
+                // but we can pass a seed-derived hash
+                const derivedHash = '0x' + seed.toString(16).padStart(64, '0');
+                const session = DartHLGEN.createLiveSession(tokenId, derivedHash);
                 currentSession = session;
                 session.startAnimation(canvas);
                 
@@ -709,10 +615,7 @@
                     updateIntensityUI(0, true);
                 }
                 
-                requestAnimationFrame(() => {
-                    engineStarted = true;
-                });
-                
+                requestAnimationFrame(() => { engineStarted = true; });
                 startUILoop();
                 
                 const engineInfo = engineBootMessages[canonicalResult.traits.engineType] || { trait: "booting" };
@@ -727,61 +630,57 @@
         
         function toggleFreeze() {
             isFrozen = !isFrozen;
-            const url = new URL(window.location);
-            
             if (isFrozen) {
-                url.searchParams.set('freeze', 'true');
                 freezeBtn.classList.add('active');
                 freezeBtn.textContent = '❄️ FREEZE (ON)';
                 renderCanonicalMode();
             } else {
-                url.searchParams.delete('freeze');
                 freezeBtn.classList.remove('active');
                 freezeBtn.textContent = '❄️ FREEZE';
                 startLiveMode();
             }
-            window.history.pushState({}, '', url);
         }
         
         function randomToken() {
             const randomId = Math.floor(Math.random() * 9999) + 1;
-            const randomHash = '0x' + Math.random().toString(36).substring(2, 10);
             tokenInput.value = randomId;
-            hashInput.value = randomHash;
-            
-            const url = new URL(window.location);
-            url.searchParams.set('tid', randomId);
-            url.searchParams.set('h', randomHash);
-            window.history.pushState({}, '', url);
+            seedInput.value = '';
+            isMintedToken = false;
             
             statusDiv.innerHTML = `RANDOM TOKEN — ID ${randomId} <span class="cursor"></span>`;
-            
-            if (isFrozen) {
-                renderCanonicalMode();
-            } else {
-                startLiveMode();
-            }
+            if (isFrozen) renderCanonicalMode();
+            else startLiveMode();
         }
         
-        function init() {
+        // ✨ REWRITTEN: Init now reads ?tokenId from URL for Farcaster mini-app
+        async function init() {
             const params = new URLSearchParams(window.location.search);
             const tid = params.get('tid') || params.get('tokenId');
-            const h = params.get('h') || params.get('txHash');
             const freezeParam = params.get('freeze') === 'true';
+            const seedParam = params.get('seed');
             
-            if (tid) tokenInput.value = tid;
-            if (h) hashInput.value = h;
+            if (tid) {
+                tokenInput.value = tid;
+                // If tokenId is in URL, this is a minted token
+                isMintedToken = true;
+                
+                if (seedParam) {
+                    // Seed provided directly in URL
+                    seedInput.value = seedParam;
+                }
+                // Hide the seed input for minted tokens (read from contract)
+                // seedInput.style.display = 'none'; // Uncomment to enforce contract reads
+            }
             
-            isFrozen = freezeParam;
-            
-            if (isFrozen) {
+            if (freezeParam) {
+                isFrozen = true;
                 freezeBtn.classList.add('active');
                 freezeBtn.textContent = '❄️ FREEZE (ON)';
                 renderCanonicalMode();
             } else {
                 freezeBtn.classList.remove('active');
                 freezeBtn.textContent = '❄️ FREEZE';
-                startLiveMode();
+                await startLiveMode();
             }
         }
         
@@ -809,7 +708,7 @@
             if (e.key === 't' || e.key === 'T') testIntensityFetch();
         });
         
-        console.log("Terminal Viewer Ready — v1.9.0, engine-specific identity display");
+        console.log("Terminal Viewer Ready — v1.9.1, seed-native, Farcaster mini-app compatible");
     </script>
 </body>
 </html>
